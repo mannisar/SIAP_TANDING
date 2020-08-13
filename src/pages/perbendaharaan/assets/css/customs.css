@@ -1,0 +1,21 @@
+*, body {
+    margin: 0;
+    padding: 0;
+}
+.site-layout-sub-header-background {
+    background: #fff;
+}
+  
+.site-layout-background {
+    background: #fff;
+}
+
+.logo {
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 16px;
+}
+
+.ant-btn {
+    margin-right: 8px;
+}
