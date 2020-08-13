@@ -1,26 +1,15 @@
-import React from 'react';
-import logo from './logo.svg';
+import { React, BrowserRouter as Router, Switch, Route } from './pages/perbendaharaan/libraries/dependencies';
 import './App.css';
+import appRoutes from './pages/perbendaharaan/routes';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Router>
+      <Switch>
+        {appRoutes.map(route => <Route key={route.name} {...route} />)}
+      </Switch>
+    </Router>
+  )
 }
 
 export default App;
