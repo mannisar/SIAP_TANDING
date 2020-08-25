@@ -1,10 +1,40 @@
 import Perbendaharaan from '../perbendaharaan';
-import BrowseKeberatan from './dashboard/BrowseKeberatan';
-import RekamKeberatan from './dashboard/RekamKeberatan';
-import RekamKepKeberatan from './dashboard/RekamKepKeberatan';
-import DisposisiDokKeberatan from './dashboard/DisposisiDokKeberatan';
+// @Keberatan
+import BrowseKeberatan from './dashboard/Keberatan/BrowseKeberatan';
+import RekamKeberatan from './dashboard/Keberatan/RekamKeberatan';
+import RekamKepKeberatan from './dashboard/Keberatan/RekamKepKeberatan';
+import DisposisiDokKeberatan from './dashboard/Keberatan/DisposisiDokKeberatan';
+import PencabutanKeberatan from './dashboard/Keberatan/PencabutanKeberatan';
+// @Banding
+import TampilBanding from './dashboard/Banding/TampilBanding';
+import RekamSUB from './dashboard/Banding/RekamSUB';
+import RekamPermintaanSUB from './dashboard/Banding/RekamPermintaanSUB';
 
 const appRoutes = [
+    {
+        name: "Pencabutan Keberatan",
+        component: PencabutanKeberatan,
+        exact: true,
+        path: "/pencabutan-keberatan"
+    },
+    {
+        name: "Perekaman Permintaan SUB",
+        component: RekamPermintaanSUB,
+        exact: true,
+        path: "/perekaman-permintaan-sub"
+    },
+    {
+        name: "Perekaman SUB",
+        component: RekamSUB,
+        exact: true,
+        path: "/perekaman-sub"
+    },
+    {
+        name: "Tampil Banding",
+        component: TampilBanding,
+        exact: true,
+        path: "/tampil-banding"
+    },
     {
         name: "Disposisi Dokumen Keberatan",
         component: DisposisiDokKeberatan,
@@ -12,13 +42,13 @@ const appRoutes = [
         path: "/disposisi-dokumen-keberatan"
     },
     {
-        name: "Rekam Keputusan Keberatan",
+        name: "Perekaman Keputusan Keberatan",
         component: RekamKepKeberatan,
         exact: true,
         path: "/perekaman-keputusan-keberatan"
     },
     {
-        name: "Rekam Keberatan",
+        name: "Perekaman Keberatan",
         component: RekamKeberatan,
         exact: true,
         path: "/perekaman-keberatan"

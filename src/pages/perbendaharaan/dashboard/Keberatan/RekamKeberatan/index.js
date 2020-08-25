@@ -1,4 +1,4 @@
-import { React, useState, Form, Input, DatePicker, Row, Col, Select, Button, Checkbox, Table, Radio, Modal, Layout, Menu, UserOutlined, Link } from '../../libraries/dependencies';
+import { React, useState, Form, Input, DatePicker, Row, Col, Select, Button, Checkbox, Table, Radio, Modal, Layout, Menu, FolderOpenOutlined, Link, useEffect, AutoComplete } from '../../../libraries/dependencies';
 
 const customLayout = {
     labelCol: { span: 6 }, wrapperCol: { span: 0 }
@@ -32,12 +32,17 @@ const tailLayoutLarge = {
 //     wrapperCol: { span: 24 }
 // };
 
+const tailLayoutSpacing = {
+    wrapperCol: { offset: 6, span: 4 }
+};
+
 const tailLayoutBtn = {
     wrapperCol: { offset: 6, span: 8 }
 };
 
 const { Option } = Select;
 const { Header, Content, Footer, Sider } = Layout;
+const { SubMenu } = Menu;
 
 function RekamKeberatan() {
     const [form] = Form.useForm();
@@ -62,6 +67,35 @@ function RekamKeberatan() {
             name: '-'
         }
     ];
+    const [options, setOptions] = useState([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            // ** Kode Kantor */
+            let arrKantor = [];
+            await fetch(process.env.REACT_APP_URL + "v1/kantor/all")
+                .then(res => res.json())
+                .then(data => data.data.map((item) => arrKantor.push({ value: item.kodeKantor })));
+            await setOptions(arrKantor)
+        }
+        fetchData();
+    }, []);
+
+    function onSelect(value, option, name) {
+        if (name.unique === "kodeKantorPenerbit") {
+            fetch(process.env.REACT_APP_URL + `v1/kantor/${value}`) // GET KANTOR GROUP BY KODE
+                .then(res => res.json())
+                .then(data => form.setFieldsValue({ labelKantorPenerbit: data.data.namaKantorPanjang }));
+        } else if (name.unique === "kodeKantorMonitor") {
+            fetch(process.env.REACT_APP_URL + `v1/kantor/${value}`) // GET KANTOR GROUP BY KODE
+                .then(res => res.json())
+                .then(data => form.setFieldsValue({ labelKantorMonitor: data.data.namaKantorPanjang }));
+        } else if (name.unique === "kodeKantorPenerusan") {
+            fetch(process.env.REACT_APP_URL + `v1/kantor/${value}`) // GET KANTOR GROUP BY KODE
+                .then(res => res.json())
+                .then(data => form.setFieldsValue({ labelKantorPenerusan: data.data.namaKantorPanjang }));
+        }
+    }
 
     const rowSelection = {
         onChange: (selectedRowKeys, selectedRows) => {
@@ -71,39 +105,9 @@ function RekamKeberatan() {
     };
 
     const onFinish = values => {
-        // const {
-        //     ResultTglPenetapan,
-        //     alamat,
-        //     alasan,
-        //     jaminan,
-        //     jenisDokumen,
-        //     keputusan,
-        //     kodeKantorMonitor,
-        //     kodeKantorPenerbit,
-        //     kodeKantorPenerusan,
-        //     labelKantorMonitor,
-        //     labelKantorPenerbit,
-        //     labelKantorPenerusan,
-        //     noAgendaKantor,
-        //     noPIB,
-        //     noPenetapan,
-        //     noSuratKeberatan,
-        //     npwp,
-        //     radio1,
-        //     radio2,
-        //     radio3,
-        //     radio4,
-        //     radio5,
-        //     radio6,
-        //     radio7,
-        //     radio8,
-        //     resultNoPenetapan,
-        //     status,
-        //     tglPIB,
-        //     tglPenetapan,
-        //     tglSuratKeberatan,
-        // } = values;
-        console.log(values, 'response!')
+        console.log(values, 'response!');
+        console.log(selectedRowKeys);
+        console.log(selectedRows);
     };
 
     const onReset = () => {
@@ -137,24 +141,10 @@ function RekamKeberatan() {
     };
 
     const onRadioBtn = e => {
-        if (form.getFieldsValue().radio1 === undefined || form.getFieldsValue().radio2 === undefined || form.getFieldsValue().radio3 === undefined || form.getFieldsValue().radio4 === undefined || form.getFieldsValue().radio5 === undefined || form.getFieldsValue().radio6 === undefined || form.getFieldsValue().radio7 === undefined || form.getFieldsValue().radio8 === undefined) { form.setFieldsValue({ status: "Tidak Lengkap" }); }
-        else { form.setFieldsValue({ status: "Lengkap" }); }
-        if (e.target.name === "radio1") {
-            form.setFieldsValue(e.target.value);
-        } else if (e.target.name === "radio2") {
-            form.setFieldsValue(e.target.value);
-        } else if (e.target.name === "radio3") {
-            form.setFieldsValue(e.target.value);
-        } else if (e.target.name === "radio4") {
-            form.setFieldsValue(e.target.value);
-        } else if (e.target.name === "radio5") {
-            form.setFieldsValue(e.target.value);
-        } else if (e.target.name === "radio6") {
-            form.setFieldsValue(e.target.value);
-        } else if (e.target.name === "radio7") {
-            form.setFieldsValue(e.target.value);
-        } else if (e.target.name === "radio8") {
-            form.setFieldsValue(e.target.value)
+        if (e.target.value === "Ya") {
+            form.setFieldsValue({ status: "Lengkap" });
+        } else {
+            form.setFieldsValue({ status: "Tidak Lengkap" });
         }
     }
 
@@ -172,18 +162,28 @@ function RekamKeberatan() {
                     }}>
                     <div className="logo" style={{ fontSize: 18, paddingLeft: 24, paddingTop: 2, color: 'white' }}>SIAP TANDING</div>
                     <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-                        <Menu.Item key="1" icon={<UserOutlined style={{ marginLeft: -12 }} />}>
-                            <Link to="/perekaman-keberatan">Perekaman Keberatan</Link>
-                        </Menu.Item>
-                        <Menu.Item key="2" icon={<UserOutlined style={{ marginLeft: -12 }} />}>
-                            <Link to="/browse-keberatan">Browse Data Keberatan</Link>
-                        </Menu.Item>
-                        <Menu.Item key="3" icon={<UserOutlined style={{ marginLeft: -12 }} />}>
-                            <Link to="/perekaman-keputusan-keberatan">Perekaman Kep Keberatan</Link>
-                        </Menu.Item>
-                        <Menu.Item key="4" icon={<UserOutlined style={{ marginLeft: -12 }} />}>
-                            <Link to="/disposisi-dokumen-keberatan">Disposisi Dok Keberatan</Link>
-                        </Menu.Item>
+                        <SubMenu key="KB" icon={<FolderOpenOutlined />} title="KEBERATAN" style={{ marginLeft: -12 }} >
+                            <Menu.Item key="1" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
+                                <Link to="/perekaman-keberatan">Perekaman Keberatan</Link>
+                            </Menu.Item>
+                            <Menu.Item key="2" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
+                                <Link to="/browse-keberatan">Browse Data Keberatan</Link>
+                            </Menu.Item>
+                            <Menu.Item key="3" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
+                                <Link to="/perekaman-keputusan-keberatan">Perekaman Kep Keberatan</Link>
+                            </Menu.Item>
+                        </SubMenu>
+                        <SubMenu key="BD" icon={<FolderOpenOutlined />} title="BANDING" style={{ marginLeft: -12 }} >
+                            <Menu.Item key="5" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
+                                <Link to="/tampil-banding">Tampil Banding</Link>
+                            </Menu.Item>
+                            <Menu.Item key="6" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
+                                <Link to="/perekaman-permintaan-sub">Perekaman Permintaan SUB</Link>
+                            </Menu.Item>
+                            <Menu.Item key="7" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
+                                <Link to="/perekaman-sub">Perekaman SUB</Link>
+                            </Menu.Item>
+                        </SubMenu>
                     </Menu>
                 </Sider>
                 <Layout>
@@ -205,10 +205,20 @@ function RekamKeberatan() {
                                                             noStyle
                                                             rules={[{ required: false }]}
                                                         >
-                                                            <Input />
+                                                            <AutoComplete
+                                                                style={{
+                                                                    width: '100%',
+                                                                }}
+                                                                options={options}
+                                                                filterOption={(inputValue, option) =>
+                                                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                                                }
+                                                                autoFocus={false}
+                                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorPenerbit" })}
+                                                            />
                                                         </Form.Item>
                                                     </Col>
-                                                    <Col span={14}>
+                                                    <Col span={18}>
                                                         <Form.Item
                                                             name="labelKantorPenerbit"
                                                             noStyle
@@ -227,10 +237,20 @@ function RekamKeberatan() {
                                                             noStyle
                                                             rules={[{ required: false }]}
                                                         >
-                                                            <Input />
+                                                            <AutoComplete
+                                                                style={{
+                                                                    width: '100%',
+                                                                }}
+                                                                options={options}
+                                                                filterOption={(inputValue, option) =>
+                                                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                                                }
+                                                                autoFocus={false}
+                                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorMonitor" })}
+                                                            />
                                                         </Form.Item>
                                                     </Col>
-                                                    <Col span={14}>
+                                                    <Col span={18}>
                                                         <Form.Item
                                                             name="labelKantorMonitor"
                                                             noStyle
@@ -249,10 +269,20 @@ function RekamKeberatan() {
                                                             noStyle
                                                             rules={[{ required: false }]}
                                                         >
-                                                            <Input />
+                                                            <AutoComplete
+                                                                style={{
+                                                                    width: '100%',
+                                                                }}
+                                                                options={options}
+                                                                filterOption={(inputValue, option) =>
+                                                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                                                }
+                                                                autoFocus={false}
+                                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorPenerusan" })}
+                                                            />
                                                         </Form.Item>
                                                     </Col>
-                                                    <Col span={14}>
+                                                    <Col span={18}>
                                                         <Form.Item
                                                             name="labelKantorPenerusan"
                                                             noStyle
@@ -461,6 +491,188 @@ function RekamKeberatan() {
                                                         </Form.Item>
                                                     </Col>
                                                 </Row>
+                                            </Form.Item>
+                                            {/** PEMBATAS */}
+                                            <Form.Item {...tailLayoutSpacing} style={{ textAlign: 'center' }}>
+                                                <Form.Item
+                                                    name=""
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <span>Nilai Keberatan</span>
+                                                </Form.Item>
+                                            </Form.Item>
+                                            {/** PEMBATAS */}
+                                            <Form.Item {...tailLayoutExtraSmall} label="BM">
+                                                <Form.Item
+                                                    name="BM_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="BMTP">
+                                                <Form.Item
+                                                    name="BMTP_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="BMTPS">
+                                                <Form.Item
+                                                    name="BMTPS_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="BMAD">
+                                                <Form.Item
+                                                    name="BMAD_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="BMI">
+                                                <Form.Item
+                                                    name="BMI_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="CTEM">
+                                                <Form.Item
+                                                    name="CTEM_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="CEA">
+                                                <Form.Item
+                                                    name="CEA_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="CMEA">
+                                                <Form.Item
+                                                    name="CMEA_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="PAB LAIN (BUNGA)">
+                                                <Form.Item
+                                                    name="PAB_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="DENDA PAB">
+                                                <Form.Item
+                                                    name="DENDA_PAB_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="BUNGA AWAL">
+                                                <Form.Item
+                                                    name="BUNGA_AWAL_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="BK">
+                                                <Form.Item
+                                                    name="BK_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="PPN">
+                                                <Form.Item
+                                                    name="PPN_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="PPH">
+                                                <Form.Item
+                                                    name="PPH_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="PPnBM">
+                                                <Form.Item
+                                                    name="PPnBM_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="CK LAIN">
+                                                <Form.Item
+                                                    name="CK_LAIN_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="DENDA CK">
+                                                <Form.Item
+                                                    name="DENDA_CK_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="BUNGA PPN">
+                                                <Form.Item
+                                                    name="BUNGA_PPN_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                            </Form.Item>
+                                            <Form.Item {...tailLayoutExtraSmall} label="TOTAL">
+                                                <Form.Item
+                                                    name="TOTAL_nilai"
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input />
+                                                </Form.Item>
                                             </Form.Item>
                                         </Form>
                                     </Col>
