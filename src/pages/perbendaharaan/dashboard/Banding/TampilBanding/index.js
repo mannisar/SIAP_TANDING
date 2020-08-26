@@ -1,4 +1,4 @@
-import { React, Layout, Menu, FolderOpenOutlined, Link, Form, Row, Col, Input, DatePicker, Select, Button, Table, Modal, useState } from '../../../libraries/dependencies';
+import { React, Form, Row, Col, Input, DatePicker, Select, Button, Table, Modal, useState } from '../../../libraries/dependencies';
 
 // const customLayout = {
 //     labelCol: { span: 6 }, wrapperCol: { span: 0 }
@@ -37,10 +37,8 @@ const tailLayoutBtn = {
 };
 
 const { Option } = Select;
-const { Header, Content, Footer, Sider } = Layout;
-const { SubMenu } = Menu;
 
-function TampilBanding() {
+function TampilBanding(props) {
     const [form] = Form.useForm();
     const [actionVisible, setActionVisible] = useState(false);
     const columns_sub = [
@@ -164,154 +162,109 @@ function TampilBanding() {
     };
 
     return (
-        <>
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider
-                    breakpoint="lg"
-                    collapsedWidth="0"
-                    onBreakpoint={broken => {
-                        // console.log(broken);
-                    }}
-                    onCollapse={(collapsed, type) => {
-                        // console.log(collapsed, type);
-                    }}>
-                    <div className="logo" style={{ fontSize: 18, paddingLeft: 24, paddingTop: 2, color: 'white' }}>SIAP TANDING</div>
-                    <Menu theme="dark" mode="inline" defaultSelectedKeys={['5']}>
-                        <SubMenu key="KB" icon={<FolderOpenOutlined />} title="KEBERATAN" style={{ marginLeft: -12 }} >
-                            <Menu.Item key="1" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-keberatan">Perekaman Keberatan</Link>
-                            </Menu.Item>
-                            <Menu.Item key="2" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/browse-keberatan">Browse Data Keberatan</Link>
-                            </Menu.Item>
-                            <Menu.Item key="3" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-keputusan-keberatan">Perekaman Kep Keberatan</Link>
-                            </Menu.Item>
-                        </SubMenu>
-                        <SubMenu key="BD" icon={<FolderOpenOutlined />} title="BANDING" style={{ marginLeft: -12 }} >
-                            <Menu.Item key="5" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/tampil-banding">Tampil Banding</Link>
-                            </Menu.Item>
-                            <Menu.Item key="6" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-permintaan-sub">Perekaman Permintaan SUB</Link>
-                            </Menu.Item>
-                            <Menu.Item key="7" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-sub">Perekaman SUB</Link>
-                            </Menu.Item>
-                        </SubMenu>
-                    </Menu>
-                </Sider>
-                <Layout>
-                    <Header className="site-layout-sub-header-background" style={{ padding: 0 }} />
-                    <Content style={{ margin: '24px 16px 0' }}>
-                        <div className="site-layout-background" style={{ padding: 24, minHeight: 400 }}>
-                            <Row>
-                                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>PENGAJUAN BANDING</h1>
-                            </Row>
-                            <Row>
-                                <Col span={24}>
-                                    <Form {...normalLayout} form={form} name="first-form" labelAlign={"left"} size={"small"} onFinish={onFinish}>
-                                        <Form.Item {...tailLayoutExtraSmall} label="No Sengketa Pajak" name="noSengketaPajak" rules={[{ required: false }]}>
-                                            <Input />
-                                        </Form.Item>
-                                        <Form.Item {...tailLayoutMedium} label="Pemohon Banding" >
-                                            <Row gutter={4}>
-                                                <Col span={8}>
-                                                    <Form.Item
-                                                        name="noBanding"
-                                                        noStyle
-                                                        rules={[{ required: false }]}
-                                                    >
-                                                        <Input style={{ width: '100%' }} />
-                                                    </Form.Item>
-                                                </Col>
-                                                <Col span={16}>
-                                                    <Form.Item
-                                                        name="labelBanding"
-                                                        noStyle
-                                                        rules={[{ required: false }]}
-                                                    >
-                                                        <Input />
-                                                    </Form.Item>
-                                                </Col>
-                                            </Row>
-                                        </Form.Item>
-                                        <Form.Item {...tailLayoutMedium} label="No / Tanggal Objek Banding" >
-                                            <Row gutter={4}>
-                                                <Col span={8}>
-                                                    <Form.Item
-                                                        name="jenisObjekBanding"
-                                                        label="jenisObjekBanding"
-                                                        noStyle
-                                                        rules={[{ required: false }]}
-                                                    >
-                                                        <Select>
-                                                            <Option value="KEBERATAN">KEBERATAN</Option>
-                                                            <Option value="KERINGANAN">KERINGANAN</Option>
-                                                        </Select>
-                                                    </Form.Item>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Form.Item
-                                                        name="noObjekBanding"
-                                                        noStyle
-                                                        rules={[{ required: false }]}
-                                                    >
-                                                        <Input />
-                                                    </Form.Item>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Form.Item
-                                                        name="tglObjekBanding"
-                                                        noStyle
-                                                        rules={[{ required: false }]}
-                                                    >
-                                                        <DatePicker style={{ width: '100%' }} />
-                                                    </Form.Item>
-                                                </Col>
-                                            </Row>
-                                        </Form.Item>
-                                        <Form.Item {...tailLayoutExtraSmall} name="statusSUB" label="Status SUB" rules={[{ required: false }]}>
-                                            <Select>
-                                                <Option value="Proses">Proses</Option>
-                                                <Option value="Tunda">Tunda</Option>
-                                                <Option value="Selesai">Selesai</Option>
-                                            </Select>
-                                        </Form.Item>
-                                        <Form.Item {...tailLayoutBtn}>
-                                            <Row gutter={8}>
-                                                <Col span={12}>
-                                                    <Button type="primary" htmlType="button" style={{ width: '100%' }}>
-                                                        Cari
-                                                    </Button>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Button type="primary" htmlType="button" style={{ width: '100%' }} onClick={onReset}>
-                                                        Clear
-                                                    </Button>
-                                                </Col>
-                                            </Row>
-                                        </Form.Item>
-                                    </Form>
+        <div hidden={props.hidden}>
+            <Row>
+                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>PENGAJUAN BANDING</h1>
+            </Row>
+            <Row>
+                <Col span={24}>
+                    <Form {...normalLayout} form={form} name="first-form" labelAlign={"left"} size={"small"} onFinish={onFinish}>
+                        <Form.Item {...tailLayoutExtraSmall} label="No Sengketa Pajak" name="noSengketaPajak" rules={[{ required: false }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item {...tailLayoutMedium} label="Pemohon Banding" >
+                            <Row gutter={4}>
+                                <Col span={8}>
+                                    <Form.Item
+                                        name="noBanding"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <Input style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={16}>
+                                    <Form.Item
+                                        name="labelBanding"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
                                 </Col>
                             </Row>
-                            <Row style={{ flexDirection: 'column' }}>
-                                <Row style={{ flexDirection: 'row', marginBottom: 24 }}>
-                                    <Button type="primary" htmlType="button" style={{ width: 175 }} size={"small"}>
-                                        Rekam Permintaan SUB
-                                    </Button>
-                                    <Button type="primary" htmlType="button" style={{ width: 100 }} size={"small"}>
-                                        Rekam SUB
-                                    </Button>
-                                </Row>
+                        </Form.Item>
+                        <Form.Item {...tailLayoutMedium} label="No / Tanggal Objek Banding" >
+                            <Row gutter={4}>
+                                <Col span={8}>
+                                    <Form.Item
+                                        name="jenisObjekBanding"
+                                        label="jenisObjekBanding"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <Select>
+                                            <Option value="KEBERATAN">KEBERATAN</Option>
+                                            <Option value="KERINGANAN">KERINGANAN</Option>
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item
+                                        name="noObjekBanding"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item
+                                        name="tglObjekBanding"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <DatePicker style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </Col>
                             </Row>
-                            <Row><Table columns={columns_sub} dataSource={data_sub} scroll={{ x: 1500 }} bordered={true} /></Row>
-                        </div>
-                    </Content>
-                    <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
-                </Layout>
-            </Layout>
-        </>
+                        </Form.Item>
+                        <Form.Item {...tailLayoutExtraSmall} name="statusSUB" label="Status SUB" rules={[{ required: false }]}>
+                            <Select>
+                                <Option value="Proses">Proses</Option>
+                                <Option value="Tunda">Tunda</Option>
+                                <Option value="Selesai">Selesai</Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item {...tailLayoutBtn}>
+                            <Row gutter={8}>
+                                <Col span={12}>
+                                    <Button type="primary" htmlType="button" style={{ width: '100%' }}>
+                                        Cari
+                                                    </Button>
+                                </Col>
+                                <Col span={12}>
+                                    <Button type="primary" htmlType="button" style={{ width: '100%' }} onClick={onReset}>
+                                        Clear
+                                                    </Button>
+                                </Col>
+                            </Row>
+                        </Form.Item>
+                    </Form>
+                </Col>
+            </Row>
+            <Row style={{ flexDirection: 'column' }}>
+                <Row style={{ flexDirection: 'row', marginBottom: 24 }}>
+                    <Button type="primary" htmlType="button" style={{ width: 175 }} size={"small"}>
+                        Rekam Permintaan SUB
+                                    </Button>
+                    <Button type="primary" htmlType="button" style={{ width: 100 }} size={"small"}>
+                        Rekam SUB
+                                    </Button>
+                </Row>
+            </Row>
+            <Row><Table columns={columns_sub} dataSource={data_sub} scroll={{ x: 1500 }} bordered={true} /></Row>
+        </div>
     )
 }
 

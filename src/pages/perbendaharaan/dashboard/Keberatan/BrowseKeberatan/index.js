@@ -1,13 +1,11 @@
-import { React, Layout, Menu, FolderOpenOutlined, UploadOutlined, Link, Form, Row, Col, Input, DatePicker, Select, Button, message, Upload, useState, Modal, Table } from '../../../libraries/dependencies';
+import { React, UploadOutlined, Form, Row, Col, Input, DatePicker, Select, Button, message, Upload, useState, Modal, Table } from '../../../libraries/dependencies';
 
 const { Option } = Select;
-const { Header, Content, Footer, Sider } = Layout;
-const { SubMenu } = Menu;
 
-function BrowseKeberatan() {
+function BrowseKeberatan(props) {
     const [form] = Form.useForm();
     const [originFileObj, setOriginFileObj] = useState(null);
-    const props = {
+    const propsUpload = {
         action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
         onChange({ file, fileList }) {
             if (file.status !== 'uploading') {
@@ -205,7 +203,7 @@ function BrowseKeberatan() {
                                         </Form.Item>
                                     </Col>
                                     <Col span={5}>
-                                        <Upload {...props} showUploadList={false}>
+                                        <Upload {...propsUpload} showUploadList={false}>
                                             <Button type="primary" htmlType="button">
                                                 <UploadOutlined />Upload
                                             </Button>
@@ -467,65 +465,20 @@ function BrowseKeberatan() {
     };
 
     return (
-        <>
-            <Layout style={{ minHeight: '100vh' }}>
-                <Sider
-                    breakpoint="lg"
-                    collapsedWidth="0"
-                    onBreakpoint={broken => {
-                        // console.log(broken);
-                    }}
-                    onCollapse={(collapsed, type) => {
-                        // console.log(collapsed, type);
-                    }}>
-                    <div className="logo" style={{ fontSize: 18, paddingLeft: 24, paddingTop: 2, color: 'white' }}>SIAP TANDING</div>
-                    <Menu theme="dark" mode="inline" defaultSelectedKeys={['2']}>
-                        <SubMenu key="KB" icon={<FolderOpenOutlined />} title="KEBERATAN" style={{ marginLeft: -12 }} >
-                            <Menu.Item key="1" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-keberatan">Perekaman Keberatan</Link>
-                            </Menu.Item>
-                            <Menu.Item key="2" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/browse-keberatan">Browse Data Keberatan</Link>
-                            </Menu.Item>
-                            <Menu.Item key="3" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-keputusan-keberatan">Perekaman Kep Keberatan</Link>
-                            </Menu.Item>
-                        </SubMenu>
-                        <SubMenu key="BD" icon={<FolderOpenOutlined />} title="BANDING" style={{ marginLeft: -12 }} >
-                            <Menu.Item key="5" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/tampil-banding">Tampil Banding</Link>
-                            </Menu.Item>
-                            <Menu.Item key="6" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-permintaan-sub">Perekaman Permintaan SUB</Link>
-                            </Menu.Item>
-                            <Menu.Item key="7" icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}>
-                                <Link to="/perekaman-sub">Perekaman SUB</Link>
-                            </Menu.Item>
-                        </SubMenu>
-                    </Menu>
-                </Sider>
-                <Layout>
-                    <Header className="site-layout-sub-header-background" style={{ padding: 0 }} />
-                    <Content style={{ margin: '24px 16px 0' }}>
-                        <div className="site-layout-background" style={{ padding: 24, minHeight: 400 }}>
-                            <Row>
-                                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>BROWSE DATA KEBERATAN</h1>
-                            </Row>
-                            <Row>
-                                <Table columns={columns_browse} dataSource={data_browse} scroll={{ x: 1500 }} bordered={true} />
-                            </Row>
-                            <Row>
-                                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>STATUS PROSES</h1>
-                            </Row>
-                            <Row>
-                                <Table columns={columns_data} dataSource={data_status} scroll={{ x: 1500 }} bordered={true} pagination={false} />
-                            </Row>
-                        </div>
-                    </Content>
-                    <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
-                </Layout>
-            </Layout>
-        </>
+        <div hidden={props.hidden}>
+            <Row>
+                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>BROWSE DATA KEBERATAN</h1>
+            </Row>
+            <Row>
+                <Table columns={columns_browse} dataSource={data_browse} scroll={{ x: 1500 }} bordered={true} />
+            </Row>
+            <Row>
+                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>STATUS PROSES</h1>
+            </Row>
+            <Row>
+                <Table columns={columns_data} dataSource={data_status} scroll={{ x: 1500 }} bordered={true} pagination={false} />
+            </Row>
+        </div>
     )
 }
 
