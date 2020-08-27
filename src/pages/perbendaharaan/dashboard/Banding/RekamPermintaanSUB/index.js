@@ -279,13 +279,13 @@ function RekamPermintaanSUB(props) {
                         {/** PEMBATAS */}
                         <Form.Item {...layoutSpacingNilai}>
                             <Row gutter={8}>
-                                <Col span={8} style={{ textAlign: 'left' }}>
+                                <Col span={8} style={{ textAlign: 'center' }}>
                                     <span>Nilai Pemberitahuan</span>
                                 </Col>
-                                <Col span={8} style={{ textAlign: 'left' }}>
+                                <Col span={8} style={{ textAlign: 'center' }}>
                                     <span>Nilai Keputusan Dirijen</span>
                                 </Col>
-                                <Col span={8} style={{ textAlign: 'left' }}>
+                                <Col span={8} style={{ textAlign: 'center' }}>
                                     <span>Nilai Branding</span>
                                 </Col>
                             </Row>

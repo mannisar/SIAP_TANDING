@@ -12,9 +12,9 @@ const tailLayoutExtraSmall = {
     wrapperCol: { span: 4 }
 };
 
-// const tailLayoutSmall = {
-//     wrapperCol: { span: 8 }
-// };
+const tailLayoutSmall = {
+    wrapperCol: { span: 8 }
+};
 
 const tailLayoutMedium = {
     wrapperCol: { span: 12 }
@@ -38,7 +38,7 @@ const tailLayoutBtn = {
 
 const { Option } = Select;
 
-function TampilBanding(props) {
+function TampilanSidang(props) {
     const [form] = Form.useForm();
     const [actionVisible, setActionVisible] = useState(false);
     const columns_sub = [
@@ -50,15 +50,9 @@ function TampilBanding(props) {
             width: 75,
         },
         {
-            title: 'No Surat Permintaan SUB',
-            dataIndex: 'noSuratPermintaanSUB',
-            key: 'noSuratPermintaanSUB',
-            align: 'center'
-        },
-        {
-            title: 'Tgl Surat Permintaan SUB',
-            dataIndex: 'tglSuratPermintaanSUB',
-            key: 'tglSuratPermintaanSUB',
+            title: 'Jenis Sidang',
+            dataIndex: 'jenisSidang',
+            key: 'jenisSidang',
             align: 'center'
         },
         {
@@ -74,27 +68,39 @@ function TampilBanding(props) {
             align: 'center'
         },
         {
-            title: 'No Objek Banding',
-            dataIndex: 'noObjekBanding',
-            key: 'noObjekBanding',
+            title: 'No Objek Banding / Gugatan',
+            dataIndex: 'noObjekBandingGugatan',
+            key: 'noObjekBandingGugatan',
             align: 'center'
         },
         {
-            title: 'Tanggal Objek Banding',
-            dataIndex: 'tglObjekBanding',
-            key: 'tglObjekBanding',
+            title: 'Tanggal Objek Banding / Gugatan',
+            dataIndex: 'tglObjekBandingGugatan',
+            key: 'tglObjekBandingGugatan',
             align: 'center'
         },
         {
-            title: 'Tanggal Jatuh Tempo',
-            dataIndex: 'tglJatuhTempo',
-            key: 'tglJatuhTempo',
+            title: 'Pokok Sengketa',
+            dataIndex: 'pokokSengketa',
+            key: 'pokokSengketa',
             align: 'center'
         },
         {
-            title: 'Status SUB',
-            dataIndex: 'statusSUB',
-            key: 'statusSUB',
+            title: 'Majelis',
+            dataIndex: 'majelis',
+            key: 'majelis',
+            align: 'center'
+        },
+        {
+            title: 'Sidang Ke-',
+            dataIndex: 'sidangKe',
+            key: 'sidangKe',
+            align: 'center'
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
             align: 'center'
         },
         {
@@ -124,14 +130,30 @@ function TampilBanding(props) {
         {
             key: '1',
             no: '1',
-            noSuratPermintaanSUB: 'U-3964/PAN.WK/2020',
-            tglSuratPermintaanSUB: '25/12/2005',
-            noSengketaPajak: '05670.45/2030/PP',
-            pemohonan: 'PT TATARASA PRATAMA',
-            noObjekBanding: 'KEP-810/KPU.03/2030',
-            tglObjekBanding: '21/05/2030',
-            tglJatuhTempo: '24/05/2030',
-            statusSUB: "Selesai"
+            jenisSidang: '',
+            tglSuratPermintaanTanggapan: '',
+            noSengketaPajak: 'XXXX',
+            pemohonan: '',
+            noObjekBandingGugatan: 'XXXX',
+            tglObjekBandingGugatan: '',
+            pokokSengketa: '',
+            majelis: '',
+            sidangKe: '',
+            status: "Cukup"
+        },
+        {
+            key: '2',
+            no: '2',
+            noSuratPermintaanTanggapan: 'XXXX',
+            tglSuratPermintaanTanggapan: 'XXXX',
+            noSengketaPajak: 'XXXX',
+            pemohonan: '',
+            noObjekBandingGugatan: 'XXXX',
+            tglObjekBandingGugatan: '',
+            pokokSengketa: '',
+            majelis: '',
+            sidangKe: '',
+            status: "Tunda"
         },
     ];
 
@@ -164,7 +186,7 @@ function TampilBanding(props) {
     return (
         <div hidden={props.hidden}>
             <Row>
-                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>PENGAJUAN BANDING</h1>
+                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>PENGAJUAN SIDANG</h1>
             </Row>
             <Row>
                 <Col span={24}>
@@ -172,29 +194,12 @@ function TampilBanding(props) {
                         <Form.Item {...tailLayoutExtraSmall} label="No Sengketa Pajak" name="noSengketaPajak" rules={[{ required: false }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item {...tailLayoutMedium} label="Pemohon Banding" >
-                            <Row gutter={4}>
-                                <Col span={8}>
-                                    <Form.Item
-                                        name="noBanding"
-                                        noStyle
-                                        rules={[{ required: false }]}
-                                    >
-                                        <Input style={{ width: '100%' }} />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={16}>
-                                    <Form.Item
-                                        name="labelBanding"
-                                        noStyle
-                                        rules={[{ required: false }]}
-                                    >
-                                        <Input />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
+                        <Form.Item {...tailLayoutExtraSmall} name="jenisSidang" label="Jenis Sidang" rules={[{ required: false }]}>
+                            <Select>
+                                <Option value="Banding">Banding</Option>
+                            </Select>
                         </Form.Item>
-                        <Form.Item {...tailLayoutMedium} label="No / Tanggal Objek Banding" >
+                        <Form.Item {...tailLayoutMedium} label="No / Tanggal Objek Banding / Gugatan" >
                             <Row gutter={4}>
                                 <Col span={8}>
                                     <Form.Item
@@ -205,7 +210,9 @@ function TampilBanding(props) {
                                     >
                                         <Select>
                                             <Option value="KEBERATAN">KEBERATAN</Option>
-                                            <Option value="KERINGANAN">KERINGANAN</Option>
+                                            <Option value="SPKTNP">SPKTNP</Option>
+                                            <Option value="SPKPBK">SPKPBK</Option>
+                                            <Option value="LAINLAIN">LAIN-LAIN</Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -220,7 +227,7 @@ function TampilBanding(props) {
                                 </Col>
                                 <Col span={8}>
                                     <Form.Item
-                                        name="tglObjekBanding"
+                                        name="tglGugatan"
                                         noStyle
                                         rules={[{ required: false }]}
                                     >
@@ -229,24 +236,73 @@ function TampilBanding(props) {
                                 </Col>
                             </Row>
                         </Form.Item>
-                        <Form.Item {...tailLayoutExtraSmall} name="statusSUB" label="Status SUB" rules={[{ required: false }]}>
+                        <Form.Item {...tailLayoutMedium} label="Pemohonan Banding / Gugatan">
+                            <Row gutter={8}>
+                                <Col span={8}>
+                                    <Form.Item
+                                        name="kodePemohonanGugatanBanding"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={16}>
+                                    <Form.Item
+                                        name="labelPemohonanGugatanBanding"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Form.Item>
+                        <Form.Item {...tailLayoutExtraSmall} name="majelis" label="majelis" rules={[{ required: false }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item {...tailLayoutExtraSmall} name="sidangKe" label="sidangKe" rules={[{ required: false }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item {...tailLayoutExtraSmall} name="statusSuratTanggapan" label="Status" rules={[{ required: false }]}>
                             <Select>
-                                <Option value="Proses">Proses</Option>
                                 <Option value="Tunda">Tunda</Option>
-                                <Option value="Selesai">Selesai</Option>
+                                <Option value="Cukup">Cukup</Option>
                             </Select>
+                        </Form.Item>
+                        <Form.Item {...tailLayoutSmall} label="ST Sidang" >
+                            <Row gutter={4}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="noSTSidang"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="tglSTSidang"
+                                        noStyle
+                                        rules={[{ required: false }]}
+                                    >
+                                        <DatePicker style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
                         </Form.Item>
                         <Form.Item {...tailLayoutBtn}>
                             <Row gutter={8}>
                                 <Col span={12}>
                                     <Button type="primary" htmlType="button" style={{ width: '100%' }}>
                                         Cari
-                                                    </Button>
+                                    </Button>
                                 </Col>
                                 <Col span={12}>
                                     <Button type="primary" htmlType="button" style={{ width: '100%' }} onClick={onReset}>
                                         Clear
-                                                    </Button>
+                                    </Button>
                                 </Col>
                             </Row>
                         </Form.Item>
@@ -255,12 +311,12 @@ function TampilBanding(props) {
             </Row>
             <Row style={{ flexDirection: 'column' }}>
                 <Row style={{ flexDirection: 'row', marginBottom: 24 }}>
+                    <Button type="primary" htmlType="button" style={{ width: 250 }} size={"small"}>
+                        Rekam Riwayat Sidang
+                    </Button>
                     <Button type="primary" htmlType="button" style={{ width: 175 }} size={"small"}>
-                        Rekam Permintaan SUB
-                                    </Button>
-                    <Button type="primary" htmlType="button" style={{ width: 100 }} size={"small"}>
-                        Rekam SUB
-                                    </Button>
+                        Rekam Surat Tanggapan
+                    </Button>
                 </Row>
             </Row>
             <Row><Table columns={columns_sub} dataSource={data_sub} scroll={{ x: 1500 }} bordered={true} /></Row>
@@ -268,4 +324,4 @@ function TampilBanding(props) {
     )
 }
 
-export default TampilBanding;
+export default TampilanSidang;

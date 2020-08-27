@@ -1,4 +1,4 @@
-import { React, useState, Form, Input, DatePicker, Row, Col, Select, Button, Checkbox, Table, Radio, Modal, useEffect, AutoComplete } from '../../../libraries/dependencies';
+import { React, useState, Form, Input, DatePicker, Row, Col, Select, Button, Checkbox, Radio, Modal, useEffect, AutoComplete, Menu, Dropdown, DownOutlined, Link } from '../../../libraries/dependencies';
 
 const customLayout = {
     labelCol: { span: 6 }, wrapperCol: { span: 0 }
@@ -32,6 +32,10 @@ const tailLayoutLarge = {
 //     wrapperCol: { span: 24 }
 // };
 
+const tailLayoutExtraSmallCustom = {
+    wrapperCol: { span: 8, offset: 6 }
+};
+
 const tailLayoutSpacing = {
     wrapperCol: { offset: 6, span: 4 }
 };
@@ -41,30 +45,30 @@ const tailLayoutBtn = {
 };
 
 const { Option } = Select;
+const { SubMenu } = Menu;
+
+const menu = (
+    <Menu>
+        <SubMenu title="Level 1">
+            <Menu.Item>Level 2</Menu.Item>
+            <Menu.Item>Level 2</Menu.Item>
+        </SubMenu>
+        <SubMenu title="Level 1">
+            <SubMenu title="Level 2">
+                <Menu.Item>Level 3</Menu.Item>
+                <Menu.Item>Level 3</Menu.Item>
+                <Menu.Item>Level 3</Menu.Item>
+                <Menu.Item>Level 3</Menu.Item>
+            </SubMenu>
+            <Menu.Item>Level 2</Menu.Item>
+        </SubMenu>
+    </Menu>
+);
 
 function RekamKeberatan(props) {
     const [form] = Form.useForm();
-    const [selectionType] = useState('checkbox');
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-    const [selectedRows, setSelectedRows] = useState([]);
     const [detailPIBVisible, setDetailPIBVisible] = useState(false);
     const [jaminanPelunasanVisible, setJaminanPelunasanVisible] = useState(false);
-    const columns = [
-        {
-            title: 'Nama Pokok Sengketa',
-            dataIndex: 'name',
-        }
-    ];
-    const data = [
-        {
-            key: '1',
-            name: '-'
-        },
-        {
-            key: '2',
-            name: '-'
-        }
-    ];
     const [options, setOptions] = useState([]);
 
     useEffect(() => {
@@ -95,23 +99,12 @@ function RekamKeberatan(props) {
         }
     }
 
-    const rowSelection = {
-        onChange: (selectedRowKeys, selectedRows) => {
-            setSelectedRowKeys(selectedRowKeys);
-            setSelectedRows(selectedRows);
-        }
-    };
-
     const onFinish = values => {
         console.log(values, 'response!');
-        console.log(selectedRowKeys);
-        console.log(selectedRows);
     };
 
     const onReset = () => {
         form.resetFields();
-        setSelectedRowKeys([]);
-        setSelectedRows([]);
     };
 
     function showModal(name) {
@@ -387,18 +380,12 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutSmall} label="Pokok Sengketa">
-                                <Table
-                                    rowSelection={{
-                                        type: selectionType,
-                                        ...rowSelection,
-                                    }}
-                                    columns={columns}
-                                    dataSource={data}
-                                    pagination={false}
-                                    size={"small"}
-                                    bordered={true}
-                                />
+                            <Form.Item {...tailLayoutExtraSmall} label="Pokok Sengketa">
+                                <Dropdown overlay={menu}>
+                                    <Link className="ant-dropdown-link" to="#" onClick={e => e.preventDefault()} style={{ width: '100%' }}>
+                                        Pilih Sengketa <DownOutlined style={{ display: 'inline-block' }} />
+                                    </Link>
+                                </Dropdown>
                             </Form.Item>
                             <Form.Item {...tailLayoutSmall} label="Jaminan / Pelunasan">
                                 <Row gutter={8} style={{ marginBottom: 2 }}>
@@ -461,177 +448,183 @@ function RekamKeberatan(props) {
                                 </Form.Item>
                             </Form.Item>
                             {/** PEMBATAS */}
-                            <Form.Item {...tailLayoutExtraSmall} label="BM">
-                                <Form.Item
-                                    name="BM_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="BMTP">
-                                <Form.Item
-                                    name="BMTP_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="BMTPS">
-                                <Form.Item
-                                    name="BMTPS_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="BMAD">
-                                <Form.Item
-                                    name="BMAD_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="BMI">
-                                <Form.Item
-                                    name="BMI_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="CTEM">
-                                <Form.Item
-                                    name="CTEM_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="CEA">
-                                <Form.Item
-                                    name="CEA_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="CMEA">
-                                <Form.Item
-                                    name="CMEA_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="PAB LAIN (BUNGA)">
-                                <Form.Item
-                                    name="PAB_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="DENDA PAB">
-                                <Form.Item
-                                    name="DENDA_PAB_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="BUNGA AWAL">
-                                <Form.Item
-                                    name="BUNGA_AWAL_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="BK">
-                                <Form.Item
-                                    name="BK_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="PPN">
-                                <Form.Item
-                                    name="PPN_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="PPH">
-                                <Form.Item
-                                    name="PPH_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="PPnBM">
-                                <Form.Item
-                                    name="PPnBM_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="CK LAIN">
-                                <Form.Item
-                                    name="CK_LAIN_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="DENDA CK">
-                                <Form.Item
-                                    name="DENDA_CK_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="BUNGA PPN">
-                                <Form.Item
-                                    name="BUNGA_PPN_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="TOTAL">
-                                <Form.Item
-                                    name="TOTAL_nilai"
-                                    noStyle
-                                    rules={[{ required: false }]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Form.Item>
+                            <Row>
+                                <Col span={12}>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BM">
+                                        <Form.Item
+                                            name="BM_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMTP">
+                                        <Form.Item
+                                            name="BMTP_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMTPS">
+                                        <Form.Item
+                                            name="BMTPS_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMAD">
+                                        <Form.Item
+                                            name="BMAD_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMI">
+                                        <Form.Item
+                                            name="BMI_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CTEM">
+                                        <Form.Item
+                                            name="CTEM_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CEA">
+                                        <Form.Item
+                                            name="CEA_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CMEA">
+                                        <Form.Item
+                                            name="CMEA_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PAB LAIN (BUNGA)">
+                                        <Form.Item
+                                            name="PAB_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="DENDA PAB">
+                                        <Form.Item
+                                            name="DENDA_PAB_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BUNGA AWAL">
+                                        <Form.Item
+                                            name="BUNGA_AWAL_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BK">
+                                        <Form.Item
+                                            name="BK_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PPN">
+                                        <Form.Item
+                                            name="PPN_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PPH">
+                                        <Form.Item
+                                            name="PPH_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PPnBM">
+                                        <Form.Item
+                                            name="PPnBM_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CK LAIN">
+                                        <Form.Item
+                                            name="CK_LAIN_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="DENDA CK">
+                                        <Form.Item
+                                            name="DENDA_CK_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BUNGA PPN">
+                                        <Form.Item
+                                            name="BUNGA_PPN_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                    <Form.Item {...tailLayoutExtraSmallCustom} label="TOTAL">
+                                        <Form.Item
+                                            name="TOTAL_nilai"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <Input />
+                                        </Form.Item>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
                         </Form>
                     </Col>
                 </Row>
@@ -815,7 +808,7 @@ function RekamKeberatan(props) {
                     </Col>
                 </Row>
             </Row>
-        </div>
+        </div >
     )
 }
 

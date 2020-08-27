@@ -1,4 +1,4 @@
-import { React, useState, Form, Input, DatePicker, Row, Col, Select, Button, Table, Modal, Upload, message, UploadOutlined, useEffect, AutoComplete } from '../../../libraries/dependencies';
+import { React, useState, Form, Input, DatePicker, Row, Col, Select, Button, Modal, Upload, message, UploadOutlined, useEffect, AutoComplete } from '../../../libraries/dependencies';
 
 const customLayout = {
     labelCol: { span: 6 }, wrapperCol: { span: 0 }
@@ -40,9 +40,6 @@ const { Option } = Select;
 
 function RekamKepKeberatan(props) {
     const [form] = Form.useForm();
-    const [selectionType] = useState('checkbox');
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-    const [selectedRows, setSelectedRows] = useState([]);
     const [detailPIBVisible, setDetailPIBVisible] = useState(false);
     const [originFileObj, setOriginFileObj] = useState(null);
     const propsUpload = {
@@ -54,23 +51,6 @@ function RekamKepKeberatan(props) {
             }
         }
     };
-    const columns = [
-        {
-            title: 'Nama Pokok Sengketa',
-            dataIndex: 'name',
-        }
-    ];
-    const data = [
-        {
-            key: '1',
-            name: '-'
-        },
-        {
-            key: '2',
-            name: '-'
-        }
-    ];
-
     const [options, setOptions] = useState([]);
 
     useEffect(() => {
@@ -101,17 +81,8 @@ function RekamKepKeberatan(props) {
         }
     }
 
-    const rowSelection = {
-        onChange: (selectedRowKeys, selectedRows) => {
-            setSelectedRowKeys(selectedRowKeys);
-            setSelectedRows(selectedRows);
-        }
-    };
-
     const onFinish = values => {
         console.log(values, "response!");
-        console.log(selectedRowKeys);
-        console.log(selectedRows);
     };
 
     const onReset = () => {
@@ -391,17 +362,11 @@ function RekamKepKeberatan(props) {
                             </Row>
                         </Form.Item>
                         <Form.Item {...tailLayoutSmall} label="Pokok Sengketa">
-                            <Table
-                                rowSelection={{
-                                    type: selectionType,
-                                    ...rowSelection,
-                                }}
-                                columns={columns}
-                                dataSource={data}
-                                pagination={false}
-                                size={"small"}
-                                bordered={true}
-                            />
+                            <Select>
+                                <Option value="Data 1">Data 1</Option>
+                                <Option value="Data 2">Data 2</Option>
+                                <Option value="Data 3">Data 3</Option>
+                            </Select>
                         </Form.Item>
                         {/** PEMBATAS */}
                         <Form.Item {...tailLayoutSpacing}>

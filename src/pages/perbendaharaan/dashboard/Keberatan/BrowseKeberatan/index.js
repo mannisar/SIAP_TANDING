@@ -132,7 +132,7 @@ function BrowseKeberatan(props) {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Select>
+                                            <Select defaultValue="PIB-BERKALA">
                                                 <Option value="PIB-BERKALA">PIB BERKALA</Option>
                                                 <Option value="PIB-VOORITSLAG">PIB VOORITSLAG</Option>
                                                 <Option value="RUSH-HANDLING">RUSH HANDLING</Option>
@@ -158,16 +158,16 @@ function BrowseKeberatan(props) {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <DatePicker style={{ width: '100%' }} />
+                                            <DatePicker style={{ width: '100%' }} placeholder="tanggal penetapan" />
                                         </Form.Item>
                                     </Col>
                                 </Row>
                             </Form.Item>
                             <Form.Item name="npwp" rules={[{ required: false }]}>
-                                <Input />
+                                <Input placeholder="npwp" />
                             </Form.Item>
                             <Form.Item name="alamat" rules={[{ required: false }]}>
-                                <Input.TextArea style={{ minHeight: 150, maxHeight: 150 }} />
+                                <Input.TextArea style={{ minHeight: 150, maxHeight: 150 }} placeholder="alamat" />
                             </Form.Item>
                             <Form.Item>
                                 <Row gutter={8}>
@@ -177,7 +177,7 @@ function BrowseKeberatan(props) {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input placeholder="keputusan pencabutan" />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
@@ -186,7 +186,7 @@ function BrowseKeberatan(props) {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <DatePicker style={{ width: '100%' }} />
+                                            <DatePicker style={{ width: '100%' }} placeholder="tanggal pencabutan" />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -449,6 +449,7 @@ function BrowseKeberatan(props) {
                 console.log('All Values:', values)
                 setTimeout(() => {
                     form.resetFields();
+                    setOriginFileObj(null) // file upld.
                     setCabutVisible(false);
                     setLoading(false);
                     message.success("Data Terkirim!");
@@ -461,6 +462,7 @@ function BrowseKeberatan(props) {
 
     const onReset = () => {
         form.resetFields();
+        setCabutVisible(false);
         setOriginFileObj(null) // file upld.
     };
 
