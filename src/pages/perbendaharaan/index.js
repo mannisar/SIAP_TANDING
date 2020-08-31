@@ -298,7 +298,7 @@ function Perbendaharaan() {
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
-          Ant Design ©2018 Created by Ant UED
+          SIAP TANDING by Perben Team
         </Footer>
       </Layout>
     </Layout>
