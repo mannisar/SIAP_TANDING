@@ -75,7 +75,14 @@ export default function PerekamanPemberitahuanPK(props) {
   return (
     <div hidden={props.hidden}>
       <h2>Perekaman Pemberitahuan Permohonan Peninjauan Kembali</h2>
-      <Form form={form} onFinish={submitData} {...layout}>
+      <Form
+        form={form}
+        onFinish={submitData}
+        {...layout}
+        initialValues={{
+          nipPemeriksaKontraMPK: [{ NIP: "", namaPegawai: "" }],
+        }}
+      >
         <Form.Item
           {...tailLayoutLarge}
           label="No/Tanggal Objek Banding/Gugatan"
@@ -187,8 +194,8 @@ export default function PerekamanPemberitahuanPK(props) {
         </Form.Item>
 
         <Form.List
-          name="nipPemeriksaMPK"
-          label="Nip Pemeriksa MPK"
+          name="nipPemeriksaKontraMPK"
+          label="NIP Pemeriksa Kontra MPK"
           {...formItemLayoutWithOutLabel}
         >
           {(fields, { add, remove }) => {
