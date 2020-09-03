@@ -5,7 +5,7 @@ const customLayout = {
 };
 
 const normalLayout = {
-    labelCol: { span: 6 }, wrapperCol: { span: 24 }
+    labelCol: { span: 6 }, wrapperCol: { span: 22 }
 };
 
 const tailLayoutExtraSmall = {
@@ -32,9 +32,9 @@ const tailLayoutLarge = {
 //     wrapperCol: { span: 24 }
 // };
 
-const tailLayoutExtraSmallCustom = {
-    wrapperCol: { span: 8, offset: 6 }
-};
+// const tailLayoutExtraSmallCustom = {
+//     wrapperCol: { span: 4, offset: 0 }
+// };
 
 const tailLayoutSpacing = {
     wrapperCol: { offset: 6, span: 4 }
@@ -47,29 +47,30 @@ const tailLayoutBtn = {
 const { Option } = Select;
 const { SubMenu } = Menu;
 
-const menu = (
-    <Menu>
-        <SubMenu title="Level 1">
-            <Menu.Item>Level 2</Menu.Item>
-            <Menu.Item>Level 2</Menu.Item>
-        </SubMenu>
-        <SubMenu title="Level 1">
-            <SubMenu title="Level 2">
-                <Menu.Item>Level 3</Menu.Item>
-                <Menu.Item>Level 3</Menu.Item>
-                <Menu.Item>Level 3</Menu.Item>
-                <Menu.Item>Level 3</Menu.Item>
-            </SubMenu>
-            <Menu.Item>Level 2</Menu.Item>
-        </SubMenu>
-    </Menu>
-);
-
 function RekamKeberatan(props) {
     const [form] = Form.useForm();
     const [detailPIBVisible, setDetailPIBVisible] = useState(false);
     const [jaminanPelunasanVisible, setJaminanPelunasanVisible] = useState(false);
     const [options, setOptions] = useState([]);
+    const [optionsKeberatan, setOptionKeberatan] = useState([]);
+    const [sengketaArr, setSengketaArr] = useState("");
+    const menu = (
+        <Menu onClick={(e) => setSengketaArr(e.item.props.children[1])}>
+            <SubMenu title="Level 1">
+                <Menu.Item>Level 2</Menu.Item>
+                <Menu.Item>Level 2</Menu.Item>
+            </SubMenu>
+            <SubMenu title="Level 1">
+                <SubMenu title="Level 2">
+                    <Menu.Item aria-valuetext={"Level 3"}>Level 3</Menu.Item>
+                    <Menu.Item>Level 3</Menu.Item>
+                    <Menu.Item>Level 3</Menu.Item>
+                    <Menu.Item>Level 3</Menu.Item>
+                </SubMenu>
+                <Menu.Item>Level 2</Menu.Item>
+            </SubMenu>
+        </Menu>
+    );
 
     useEffect(() => {
         async function fetchData() {
@@ -77,8 +78,19 @@ function RekamKeberatan(props) {
             let arrKantor = [];
             await fetch(process.env.REACT_APP_URL + "v1/kantor/all")
                 .then(res => res.json())
-                .then(data => data.data.map((item) => arrKantor.push({ value: item.kodeKantor })));
-            await setOptions(arrKantor)
+                .then(data => data.data.map((item) => arrKantor.push({ value: item.kodeKantor })))
+            await setOptions(arrKantor);
+
+            // ** List Pungutan */
+            let arrPungutan = []
+            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-pungutan")
+                .then(res => res.json())
+                .then(data => data.data.map((item) => arrPungutan.push({
+                    kodeAkun: item.kodeAkun,
+                    uraian: item.uraian,
+                    key: arrPungutan.length === 0 ? 1 : arrPungutan.length + 1
+                })))
+            await setOptionKeberatan(arrPungutan);
         }
         fetchData();
     }, []);
@@ -92,15 +104,56 @@ function RekamKeberatan(props) {
             fetch(process.env.REACT_APP_URL + `v1/kantor/${value}`) // GET KANTOR GROUP BY KODE
                 .then(res => res.json())
                 .then(data => form.setFieldsValue({ labelKantorMonitor: data.data.namaKantorPanjang }));
-        } else if (name.unique === "kodeKantorPenerusan") {
+        } else if (name.unique === "kodeKantorTujuan") {
             fetch(process.env.REACT_APP_URL + `v1/kantor/${value}`) // GET KANTOR GROUP BY KODE
                 .then(res => res.json())
-                .then(data => form.setFieldsValue({ labelKantorPenerusan: data.data.namaKantorPanjang }));
+                .then(data => form.setFieldsValue({ labelKantorTujuan: data.data.namaKantorPanjang }));
         }
     }
 
     const onFinish = values => {
-        console.log(values, 'response!');
+        let loopObj = optionsKeberatan.map(({ kodeAkun, uraian, key }) => ({
+            idAkun: parseInt(kodeAkun),
+            idKeberatan: key,
+            nilaiKeberatan: values[uraian] === undefined ? null : values[uraian],
+        }))
+        const bodyData = {
+            listTdKeberatanNilai: loopObj,
+            nipRekam: "string", // localStorage
+            tdKeberatan: {
+                alamat: values.alamat,
+                alasan: values.alasan,
+                flKriteria1: values.flKriteria1,
+                flKriteria2: values.flKriteria2,
+                flKriteria3: values.flKriteria3,
+                flKriteria4: values.flKriteria4,
+                flKriteria5: values.flKriteria5,
+                flKriteria6: values.flKriteria6,
+                flKriteria7: values.flKriteria7,
+                flKriteria8: values.flKriteria8,
+                flagJaminan: values.flagJaminan,
+                idHeaderPenetapan: "string", // Cari
+                idHeaderPib: "string",
+                idPerusahaan: "string", // values.idPerusahaan || NPWP
+                idProsesKeberatan: "string",
+                kodeKantorMonitoring: values.kodeKantorMonitoring,
+                kodeKantorPenerbit: values.kodeKantorPenerbit,
+                kodeKantorTujuan: values.kodeKantorTujuan,
+                noAgenda: values.noAgenda,
+                noSuratPernyataan: "string",
+                pokokSengketa3: sengketaArr,
+                status: values.status
+            }
+        }
+        fetch("http://10.162.71.119:9090/perbendaharaan/perben/keberatan/simpan-keberatan", {
+            method: "POST",
+            body: JSON.stringify(bodyData),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then(res => res.json())
+            .then(data => console.log(data));
     };
 
     const onReset = () => {
@@ -132,23 +185,25 @@ function RekamKeberatan(props) {
     };
 
     const onRadioBtn = e => {
-        if (e.target.value === "Ya") {
+        if (e.target.value === "Y") {
             form.setFieldsValue({ status: "Lengkap" });
         } else {
             form.setFieldsValue({ status: "Tidak Lengkap" });
         }
     }
 
+    const secondColumnStart = Math.floor(optionsKeberatan.length / 2);
+
     return (
         <div hidden={props.hidden}>
             <Row>
-                <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>PEREKAMAN KEBERATAN</h1>
+                <h1 style={{ fontWeight: 'bold', fontSize: 24, paddingLeft: 16 }}>PEREKAMAN KEBERATAN</h1>
             </Row>
-            <Row style={{ border: '1px solid #eaeaea', flexDirection: 'column' }}>
+            <Row style={{ flexDirection: 'column' }}>
                 <Row>
                     <Col span={24}>
-                        <Form {...customLayout} form={form} name="first-form" labelAlign={"left"} size={"small"} onFinish={onFinish} style={{ padding: 8 }}>
-                            <Form.Item {...tailLayoutLarge} label="Kode Kantor Penerbit" style={{ marginBottom: 2 }}>
+                        <Form {...customLayout} form={form} labelAlign={"left"} size={"small"} onFinish={onFinish} style={{ paddingLeft: 16 }}>
+                            <Form.Item {...tailLayoutLarge} label="Kode Kantor Penerbit" style={{ marginBottom: 2 }} colon={false}>
                                 <Row gutter={8}>
                                     <Col span={6}>
                                         <Form.Item
@@ -180,11 +235,11 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutLarge} label="Kode Kantor Monitoring" style={{ marginBottom: 2 }}>
+                            <Form.Item {...tailLayoutLarge} label="Kode Kantor Monitoring" style={{ marginBottom: 2 }} colon={false}>
                                 <Row gutter={8}>
                                     <Col span={6}>
                                         <Form.Item
-                                            name="kodeKantorMonitor"
+                                            name="kodeKantorMonitoring"
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
@@ -212,11 +267,11 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item  {...tailLayoutLarge} label="Kode Kantor Penerusan">
+                            <Form.Item  {...tailLayoutLarge} label="Kode Kantor Penerusan" colon={false}>
                                 <Row gutter={8}>
                                     <Col span={6}>
                                         <Form.Item
-                                            name="kodeKantorPenerusan"
+                                            name="kodeKantorTujuan"
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
@@ -229,13 +284,13 @@ function RekamKeberatan(props) {
                                                     option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
                                                 }
                                                 autoFocus={false}
-                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorPenerusan" })}
+                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorTujuan" })}
                                             />
                                         </Form.Item>
                                     </Col>
                                     <Col span={18}>
                                         <Form.Item
-                                            name="labelKantorPenerusan"
+                                            name="labelKantorTujuan"
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
@@ -244,10 +299,10 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutSmall} name="noAgendaKantor" label="Nomor Agenda Kantor" rules={[{ required: false }]}>
+                            <Form.Item {...tailLayoutSmall} name="noAgenda" label="Nomor Agenda Kantor" rules={[{ required: false }]} colon={false}>
                                 <Input />
                             </Form.Item>
-                            <Form.Item {...tailLayoutSmall} label="No Surat Keberatan / Tanggal">
+                            <Form.Item {...tailLayoutSmall} label="No Surat Keberatan / Tanggal" colon={false}>
                                 <Row gutter={8}>
                                     <Col span={12}>
                                         <Form.Item
@@ -269,7 +324,7 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutLarge} label="NPWP">
+                            <Form.Item {...tailLayoutLarge} label="NPWP" colon={false}>
                                 <Row gutter={8}>
                                     <Col span={12}>
                                         <Form.Item
@@ -286,10 +341,10 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutSmall} name="alamat" label="Alamat" rules={[{ required: false }]}>
+                            <Form.Item {...tailLayoutSmall} name="alamat" label="Alamat" rules={[{ required: false }]} colon={false}>
                                 <Input.TextArea />
                             </Form.Item>
-                            <Form.Item {...tailLayoutLarge} label="No Penetapan / Tanggal">
+                            <Form.Item {...tailLayoutLarge} label="No Penetapan / Tanggal" colon={false}>
                                 <Row gutter={8}>
                                     <Col span={6}>
                                         <Form.Item
@@ -343,7 +398,10 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutMedium} label="No PIB / Tanggal PIB">
+                            {/* <Form.Item {...tailLayoutExtraSmall} name="idPerusahaan" label="ID Perusahaan" rules={[{ required: false }]} colon={false}>
+                                <Input />
+                            </Form.Item> */}
+                            <Form.Item {...tailLayoutMedium} label="No PIB / Tanggal PIB" colon={false}>
                                 <Row gutter={8}>
                                     <Col span={8}>
                                         <Form.Item
@@ -380,30 +438,32 @@ function RekamKeberatan(props) {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutExtraSmall} label="Pokok Sengketa">
+                            <Form.Item {...tailLayoutExtraSmall} label="Pokok Sengketa" colon={false}>
                                 <Dropdown overlay={menu}>
                                     <Link className="ant-dropdown-link" to="#" onClick={e => e.preventDefault()} style={{ width: '100%' }}>
                                         Pilih Sengketa <DownOutlined style={{ display: 'inline-block' }} />
                                     </Link>
                                 </Dropdown>
                             </Form.Item>
-                            <Form.Item {...tailLayoutSmall} label="Jaminan / Pelunasan">
+                            <Form.Item {...tailLayoutSmall} label="Jaminan / Pelunasan" colon={false}>
                                 <Row gutter={8} style={{ marginBottom: 2 }}>
                                     <Col span={12}>
                                         <Form.Item
-                                            name="jaminan"
+                                            name="flagJaminan"
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
                                             <Select>
                                                 <Option value="Jaminan">Jaminan</Option>
+                                                <Option value="Pelunasan">Pelunasan</Option>
+                                                <Option value="Tidak Wajib Meyerahkan Jaminan">Tidak Wajib Meyerahkan Jaminan</Option>
                                             </Select>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Button type="primary" style={{ width: '100%' }} onClick={() => showModal("jaminanPelunasan")}>
                                             Cari
-                                                        </Button>
+                                        </Button>
                                         <Modal
                                             title="Jaminan / Pelunasan Modal"
                                             visible={jaminanPelunasanVisible}
@@ -440,7 +500,7 @@ function RekamKeberatan(props) {
                             {/** PEMBATAS */}
                             <Form.Item {...tailLayoutSpacing} style={{ textAlign: 'center' }}>
                                 <Form.Item
-                                    name=""
+                                    // name=""
                                     noStyle
                                     rules={[{ required: false }]}
                                 >
@@ -448,205 +508,59 @@ function RekamKeberatan(props) {
                                 </Form.Item>
                             </Form.Item>
                             {/** PEMBATAS */}
-                            <Row>
+                            <Row gutter={8}>
                                 <Col span={12}>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BM">
-                                        <Form.Item
-                                            name="BM_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMTP">
-                                        <Form.Item
-                                            name="BMTP_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMTPS">
-                                        <Form.Item
-                                            name="BMTPS_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMAD">
-                                        <Form.Item
-                                            name="BMAD_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BMI">
-                                        <Form.Item
-                                            name="BMI_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CTEM">
-                                        <Form.Item
-                                            name="CTEM_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CEA">
-                                        <Form.Item
-                                            name="CEA_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CMEA">
-                                        <Form.Item
-                                            name="CMEA_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PAB LAIN (BUNGA)">
-                                        <Form.Item
-                                            name="PAB_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="DENDA PAB">
-                                        <Form.Item
-                                            name="DENDA_PAB_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
+                                    {
+                                        optionsKeberatan.slice(0, secondColumnStart).map((item) => (
+                                            <Form.Item colon={false} wrapperCol={{ offset: 0, span: 8 }} labelCol={{ span: 12 }} label={item.uraian.length < 20 ? item.uraian : item.uraian.substring(0, 30) + "..."} key={item.key}>
+                                                <Form.Item
+                                                    name={item.uraian}
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input type="number" />
+                                                </Form.Item>
+                                            </Form.Item>
+                                        ))
+                                    }
                                 </Col>
-                                <Col span={12}>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BUNGA AWAL">
-                                        <Form.Item
-                                            name="BUNGA_AWAL_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BK">
-                                        <Form.Item
-                                            name="BK_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PPN">
-                                        <Form.Item
-                                            name="PPN_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PPH">
-                                        <Form.Item
-                                            name="PPH_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="PPnBM">
-                                        <Form.Item
-                                            name="PPnBM_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="CK LAIN">
-                                        <Form.Item
-                                            name="CK_LAIN_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="DENDA CK">
-                                        <Form.Item
-                                            name="DENDA_CK_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="BUNGA PPN">
-                                        <Form.Item
-                                            name="BUNGA_PPN_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
-                                    <Form.Item {...tailLayoutExtraSmallCustom} label="TOTAL">
-                                        <Form.Item
-                                            name="TOTAL_nilai"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input />
-                                        </Form.Item>
-                                    </Form.Item>
+                                <Col span={12} style={{ textAlign: "right", display: 'block' }}>
+                                    {
+                                        optionsKeberatan.slice(secondColumnStart).map((item) => (
+                                            <Form.Item colon={false} wrapperCol={{ offset: 0, span: 8 }} labelCol={{ span: 12 }} label={item.uraian.length < 20 ? item.uraian : item.uraian.substring(0, 30) + "..."} key={item.key}>
+                                                <Form.Item
+                                                    name={item.uraian}
+                                                    noStyle
+                                                    rules={[{ required: false }]}
+                                                >
+                                                    <Input type="number" />
+                                                </Form.Item>
+                                            </Form.Item>
+                                        ))
+                                    }
                                 </Col>
                             </Row>
                         </Form>
                     </Col>
                 </Row>
                 <Row>
-                    <h1 style={{ fontWeight: 'bold', fontSize: 16, marginLeft: 8 }}>CEK KELENGKAPAN BERKAS</h1>
+                    <h1 style={{ fontWeight: 'bold', fontSize: 16, paddingLeft: 16 }}>CEK KELENGKAPAN BERKAS</h1>
                 </Row>
                 <Row>
                     <Col span={24}>
-                        <Form {...normalLayout} form={form} name="second-form" labelAlign={"left"} size={"small"} onFinish={onFinish} style={{ padding: 8 }}>
+                        <Form {...normalLayout} form={form} labelAlign={"left"} size={"small"} onFinish={onFinish} style={{ paddingLeft: 16 }}>
                             <Form.Item style={{ marginBottom: 0 }}>
                                 <Row gutter={8}>
                                     <Col span={18}>
                                         <span>1. Ditulis dalam Bahasa Indonesia</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio1" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria1" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -658,13 +572,12 @@ function RekamKeberatan(props) {
                                         <span>2. Ditujukan Kepada Direktur Jendral Bea dan Cukai</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio2" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria2" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -676,13 +589,12 @@ function RekamKeberatan(props) {
                                         <span>3. Disertai Alasan-alasan Keberatan</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio3" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria3" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -694,13 +606,12 @@ function RekamKeberatan(props) {
                                         <span>4. Dilampiri BPJ, Bukti Pelunasan atau Surat Tagihan</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio4" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria4" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -712,13 +623,12 @@ function RekamKeberatan(props) {
                                         <span>5. Dilampiri Fotokopi Surat Penetapan atau Surat Tagihan</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio5" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria5" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -731,13 +641,12 @@ function RekamKeberatan(props) {
                                         <span style={{ marginLeft: 15, display: 'block' }}>b. Ditandatangani Oleh Kuasa Pemohonan dan Dilengkapi dengan Fotokopi Bukti Identitas diri/akta perusahaan ditambah asli Surat Kuasa Khusus</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio6" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria6" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -749,13 +658,12 @@ function RekamKeberatan(props) {
                                         <span>7. Satu Keberatan Untuk Satu Surat Penetapan atau Surat Tagihan</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio7" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria7" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -767,13 +675,12 @@ function RekamKeberatan(props) {
                                         <span>8. Memenuhi Jangka Waktu Pengajuan Keberatan</span>
                                     </Col>
                                     <Col span={6}>
-                                        <Form.Item name="radio8" style={{ float: 'right' }} rules={[{ required: false }]}>
+                                        <Form.Item name="flKriteria8" style={{ float: 'right' }} rules={[{ required: false }]}>
                                             <Radio.Group
-                                                // value={radioBtn}
                                                 onChange={onRadioBtn}
                                             >
-                                                <Radio value="Ya">Ya</Radio>
-                                                <Radio value="Tidak">Tidak</Radio>
+                                                <Radio value="Y">Ya</Radio>
+                                                <Radio value="T">Tidak</Radio>
                                             </Radio.Group>
                                         </Form.Item>
                                     </Col>
@@ -785,6 +692,7 @@ function RekamKeberatan(props) {
                             <Form.Item {...tailLayoutExtraSmall} name="keputusan" label="Keputusan" rules={[{ required: false }]}>
                                 <Select>
                                     <Option value="Terima">Terima</Option>
+                                    <Option value="Kembalikan">Kembalikan</Option>
                                 </Select>
                             </Form.Item>
                             <Form.Item {...tailLayoutSmall} name="alasan" label="Alasan" rules={[{ required: false }]}>
@@ -795,12 +703,12 @@ function RekamKeberatan(props) {
                                     <Col span={12}>
                                         <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
                                             Simpan
-                                                    </Button>
+                                        </Button>
                                     </Col>
                                     <Col span={12}>
                                         <Button type="primary" htmlType="button" style={{ width: '100%' }} onClick={onReset}>
                                             Batal
-                                                    </Button>
+                                        </Button>
                                     </Col>
                                 </Row>
                             </Form.Item>
