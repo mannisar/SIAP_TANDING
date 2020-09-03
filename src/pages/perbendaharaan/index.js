@@ -29,6 +29,7 @@ import RekamRiwayatSidang from "./dashboard/Sidang/RekamRiwayatSidang";
 import TampilanPK from "./dashboard/PeninjauanKembali/TampilanPeninjauanKembali";
 import PerekamanPenerimaanNDUsulanPK from "./dashboard/PeninjauanKembali/PerekamanPenerimaanNDUsulanPK";
 import PerekamanMemoriPK from "./dashboard/PeninjauanKembali/PerekamanMemoriPK";
+import PerekamanNDPenolakanUsulanPK from "./dashboard/PeninjauanKembali/PerekamanNDPenolakanUsulanPK";
 import PerekamanPemberitahuanPK from "./dashboard/PeninjauanKembali/PerekamanPemberitahuanPK";
 import PerekamanKontraMPK from "./dashboard/PeninjauanKembali/PerekamanKontraMPK";
 import PerekamanPutusanPK from "./dashboard/PeninjauanKembali/PerekamanPutusanPK";
@@ -202,7 +203,7 @@ function Perbendaharaan() {
               key="18"
               icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
             >
-              <Link to="/perbendaharaan/perekaman-penerimaan-ndusulanpk">
+              <Link to="/perbendaharaan/perekaman-penerimaan-nd-usulanpk">
                 PerekamanPenerimaanNDUsulanPK
               </Link>
             </Menu.Item>
@@ -218,12 +219,20 @@ function Perbendaharaan() {
               key="20"
               icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
             >
+              <Link to="/perbendaharaan/Perekaman-ND-Penolakan-UsulanPK">
+                PerekamanNDPenolakanUsulanPK
+              </Link>
+            </Menu.Item>
+            <Menu.Item
+              key="21"
+              icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
+            >
               <Link to="/perbendaharaan/perekaman-pemberitahuan-pk">
                 PerekamanPemberitahuanPK
               </Link>
             </Menu.Item>
             <Menu.Item
-              key="21"
+              key="22"
               icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
             >
               <Link to="/perbendaharaan/perekaman-kontra-mpk">
@@ -231,7 +240,7 @@ function Perbendaharaan() {
               </Link>
             </Menu.Item>
             <Menu.Item
-              key="22"
+              key="23"
               icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
             >
               <Link to="/perbendaharaan/perekaman-putusan-pk">
@@ -314,10 +323,13 @@ function Perbendaharaan() {
               hidden={id === "tampilan-peninjauan-kembali" ? false : true}
             />
             <PerekamanPenerimaanNDUsulanPK
-              hidden={id === "perekaman-nd-penolakan-usulan-pk" ? false : true}
+              hidden={id === "perekaman-penerimaan-nd-usulanpk" ? false : true}
             />
             <PerekamanMemoriPK
               hidden={id === "perekaman-memori-pk" ? false : true}
+            />
+            <PerekamanNDPenolakanUsulanPK
+              hidden={id === "Perekaman-ND-Penolakan-UsulanPK" ? false : true}
             />
             <PerekamanPemberitahuanPK
               hidden={id === "perekaman-pemberitahuan-pk" ? false : true}

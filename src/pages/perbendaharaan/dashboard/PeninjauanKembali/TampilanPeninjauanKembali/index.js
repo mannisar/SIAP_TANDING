@@ -1,6 +1,5 @@
 import {
   React,
-  Layout,
   Form,
   Input,
   Button,
@@ -32,7 +31,7 @@ function onChange(date, dateString) {
 export default function TampilanPK(props) {
   const [form] = Form.useForm();
   return (
-    <Layout hidden={props.hidden}>
+    <div hidden={props.hidden}>
       <h2>Peninjauan Kembali</h2>
       <Form
         form={form}
@@ -253,6 +252,6 @@ export default function TampilanPK(props) {
           </Button>
         </Form.Item>
       </Form>
-    </Layout>
+    </div>
   );
 }
