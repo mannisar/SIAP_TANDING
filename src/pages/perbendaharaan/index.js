@@ -25,13 +25,15 @@ import RekamPermintaanTanggapan from "./dashboard/Gugatan/RekamPermintaanTanggap
 // @Sidang
 import TampilanSidang from "./dashboard/Sidang/TampilanSidang";
 import RekamRiwayatSidang from "./dashboard/Sidang/RekamRiwayatSidang";
-//@Peninjauan Kembali
+// @Peninjauan Kembali
 import TampilanPK from "./dashboard/PeninjauanKembali/TampilanPeninjauanKembali";
 import PerekamanPenerimaanNDUsulanPK from "./dashboard/PeninjauanKembali/PerekamanPenerimaanNDUsulanPK";
 import PerekamanMemoriPK from "./dashboard/PeninjauanKembali/PerekamanMemoriPK";
 import PerekamanPemberitahuanPK from "./dashboard/PeninjauanKembali/PerekamanPemberitahuanPK";
 import PerekamanKontraMPK from "./dashboard/PeninjauanKembali/PerekamanKontraMPK";
 import PerekamanPutusanPK from "./dashboard/PeninjauanKembali/PerekamanPutusanPK";
+// @Putusan Pengadilan Pajak
+import TampilanPPP from "./dashboard/PutusanPengadilanPajak/TampilanPPP";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -237,6 +239,37 @@ function Perbendaharaan() {
               </Link>
             </Menu.Item>
           </SubMenu>
+          <SubMenu
+            key="PPP"
+            icon={<FolderOpenOutlined />}
+            title="PUTUSAN PENGADILAN PAJAK"
+            style={{ marginLeft: -12 }}
+          >
+            <Menu.Item
+              key="25"
+              icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
+            >
+              <Link to="/perbendaharaan/tampilan-putusan-pengadilan-pajak">
+                Tampilan PPP
+              </Link>
+            </Menu.Item>
+            <Menu.Item
+              key="26"
+              icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
+            >
+              <Link to="/perbendaharaan/perekaman-putusan-pengadilan-pajak">
+                Perekaman PPP
+              </Link>
+            </Menu.Item>
+            <Menu.Item
+              key="27"
+              icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
+            >
+              <Link to="/perbendaharaan/perekaman-evaluasi-putusan-pengadilan-pajak">
+                Perekaman Evaluasi PPP
+              </Link>
+            </Menu.Item>
+          </SubMenu>
         </Menu>
       </Sider>
       <Layout>
@@ -294,6 +327,9 @@ function Perbendaharaan() {
             />
             <PerekamanPutusanPK
               hidden={id === "perekaman-putusan-pk" ? false : true}
+            />
+            <TampilanPPP
+              hidden={id === "tampilan-putusan-pengadilan-pajak" ? false : true}
             />
           </div>
         </Content>
