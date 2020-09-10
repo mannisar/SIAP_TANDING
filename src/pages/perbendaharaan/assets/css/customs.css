@@ -19,3 +19,11 @@
 .ant-btn {
     margin-right: 8px;
 }
+
+.clickRowStyl {
+  cursor: pointer;
+}
+
+.ant-table-tbody>.clickRowStyl:hover>td {
+  cursor: pointer;
+}
