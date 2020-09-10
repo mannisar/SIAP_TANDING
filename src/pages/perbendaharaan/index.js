@@ -1,46 +1,19 @@
 import {
   React,
-  useParams,
   Layout,
   Menu,
   FolderOpenOutlined,
   Link,
+  Route
 } from "./libraries/dependencies";
 import "./assets/css/customs.css";
 
-// @Keberatan
-import BrowseKeberatan from "./dashboard/Keberatan/BrowseKeberatan";
-import RekamKeberatan from "./dashboard/Keberatan/RekamKeberatan";
-import RekamKepKeberatan from "./dashboard/Keberatan/RekamKepKeberatan";
-// import DisposisiDokKeberatan from './dashboard/Keberatan/DisposisiDokKeberatan';
-// import PencabutanKeberatan from './dashboard/Keberatan/PencabutanKeberatan';
-// @Banding
-import TampilanBanding from "./dashboard/Banding/TampilanBanding";
-import RekamSUB from "./dashboard/Banding/RekamSUB";
-import RekamPermintaanSUB from "./dashboard/Banding/RekamPermintaanSUB";
-// @Gugatan
-import TampilanGugatan from "./dashboard/Gugatan/TampilanGugatan";
-import RekamSuratTanggapan from "./dashboard/Gugatan/RekamSuratTanggapan";
-import RekamPermintaanTanggapan from "./dashboard/Gugatan/RekamPermintaanTanggapan";
-// @Sidang
-import TampilanSidang from "./dashboard/Sidang/TampilanSidang";
-import RekamRiwayatSidang from "./dashboard/Sidang/RekamRiwayatSidang";
-// @Peninjauan Kembali
-import TampilanPK from "./dashboard/PeninjauanKembali/TampilanPeninjauanKembali";
-import PerekamanPenerimaanNDUsulanPK from "./dashboard/PeninjauanKembali/PerekamanPenerimaanNDUsulanPK";
-import PerekamanMemoriPK from "./dashboard/PeninjauanKembali/PerekamanMemoriPK";
-import PerekamanNDPenolakanUsulanPK from "./dashboard/PeninjauanKembali/PerekamanNDPenolakanUsulanPK";
-import PerekamanPemberitahuanPK from "./dashboard/PeninjauanKembali/PerekamanPemberitahuanPK";
-import PerekamanKontraMPK from "./dashboard/PeninjauanKembali/PerekamanKontraMPK";
-import PerekamanPutusanPK from "./dashboard/PeninjauanKembali/PerekamanPutusanPK";
-// @Putusan Pengadilan Pajak
-import TampilanPPP from "./dashboard/PutusanPengadilanPajak/TampilanPPP";
+import appRoutes from "./routes";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
 function Perbendaharaan() {
-  let { id } = useParams();
   // const [collapsed, setCollapsed] = useState(false);
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -291,58 +264,7 @@ function Perbendaharaan() {
             className="site-layout-background"
             style={{ padding: 24, minHeight: 400 }}
           >
-            {/** Tambah Component Disini */}
-            <RekamKeberatan
-              hidden={id === "perekaman-keberatan" ? false : true}
-            />
-            <BrowseKeberatan
-              hidden={id === "browse-keberatan" ? false : true}
-            />
-            <RekamKepKeberatan
-              hidden={id === "perekaman-keputusan-keberatan" ? false : true}
-            />
-            <TampilanBanding hidden={id === "tampil-banding" ? false : true} />
-            <RekamPermintaanSUB
-              hidden={id === "perekaman-permintaan-sub" ? false : true}
-            />
-            <RekamSUB hidden={id === "perekaman-sub" ? false : true} />
-            <TampilanGugatan
-              hidden={id === "tampilan-gugatan" ? false : true}
-            />
-            <RekamSuratTanggapan
-              hidden={id === "perekaman-surat-tanggapan" ? false : true}
-            />
-            <RekamPermintaanTanggapan
-              hidden={id === "perekaman-permintaan-tanggapan" ? false : true}
-            />
-            <TampilanSidang hidden={id === "tampilan-sidang" ? false : true} />
-            <RekamRiwayatSidang
-              hidden={id === "perekaman-riwayat-sidang" ? false : true}
-            />
-            <TampilanPK
-              hidden={id === "tampilan-peninjauan-kembali" ? false : true}
-            />
-            <PerekamanPenerimaanNDUsulanPK
-              hidden={id === "perekaman-penerimaan-nd-usulanpk" ? false : true}
-            />
-            <PerekamanMemoriPK
-              hidden={id === "perekaman-memori-pk" ? false : true}
-            />
-            <PerekamanNDPenolakanUsulanPK
-              hidden={id === "Perekaman-ND-Penolakan-UsulanPK" ? false : true}
-            />
-            <PerekamanPemberitahuanPK
-              hidden={id === "perekaman-pemberitahuan-pk" ? false : true}
-            />
-            <PerekamanKontraMPK
-              hidden={id === "perekaman-kontra-mpk" ? false : true}
-            />
-            <PerekamanPutusanPK
-              hidden={id === "perekaman-putusan-pk" ? false : true}
-            />
-            <TampilanPPP
-              hidden={id === "tampilan-putusan-pengadilan-pajak" ? false : true}
-            />
+            {appRoutes.map((render) => <Route {...render} key={render.name} />)}
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
