@@ -1,8 +1,8 @@
-import { React, UploadOutlined, Form, Row, Col, Input, DatePicker, Select, Button, message, Upload, useState, Modal, Table } from '../../../libraries/dependencies';
+import { React, UploadOutlined, Form, Row, Col, Input, DatePicker, Select, Button, message, Upload, useState, Modal, Table, useEffect } from '../../../libraries/dependencies';
 
 const { Option } = Select;
 
-function BrowseKeberatan(props) {
+function BrowseKeberatan() {
     const [form] = Form.useForm();
     const [originFileObj, setOriginFileObj] = useState(null);
     const propsUpload = {
@@ -22,11 +22,11 @@ function BrowseKeberatan(props) {
     const [loading, setLoading] = useState(false);
     const columns_browse = [
         {
-            title: 'No',
+            title: "No",
             dataIndex: 'no',
             key: 'no',
             align: 'center',
-            width: 75,
+            width: 75
         },
         {
             title: 'No Surat',
@@ -42,8 +42,8 @@ function BrowseKeberatan(props) {
         },
         {
             title: 'NPWP/NPPBCK',
-            dataIndex: 'npwpnppbck',
-            key: 'npwpnppbck',
+            dataIndex: 'npwp',
+            key: 'npwp',
             align: 'center'
         },
         {
@@ -132,7 +132,7 @@ function BrowseKeberatan(props) {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Select defaultValue="PIB-BERKALA">
+                                            <Select>
                                                 <Option value="PIB-BERKALA">PIB BERKALA</Option>
                                                 <Option value="PIB-VOORITSLAG">PIB VOORITSLAG</Option>
                                                 <Option value="RUSH-HANDLING">RUSH HANDLING</Option>
@@ -236,32 +236,7 @@ function BrowseKeberatan(props) {
         },
     ];
 
-    const data_browse = [
-        {
-            key: '1',
-            no: '1',
-            noSurat: '123',
-            tglSurat: '10/01/2020',
-            npwpnppbck: '1234567123',
-            namaPerusahaan: 'PT MAJU SEJAHTERA',
-            jatuhTempo: '08/12/2020',
-            kantorPenerbit: '009000',
-            waktuTerima: '10-01-2020',
-            pemeriksa: '-'
-        },
-        {
-            key: '2',
-            no: '2',
-            noSurat: '123',
-            tglSurat: '10/01/2020',
-            npwpnppbck: '1234567123',
-            namaPerusahaan: 'PT MAJU SEJAHTERA',
-            jatuhTempo: '08/12/2020',
-            kantorPenerbit: '009000',
-            waktuTerima: '10-01-2020',
-            pemeriksa: '-'
-        },
-    ];
+    const [dataBrowse, setDataBrowse] = useState([]);
 
     const columns_data = [
         {
@@ -269,7 +244,7 @@ function BrowseKeberatan(props) {
             dataIndex: 'no',
             key: 'no',
             align: 'center',
-            width: 75
+            width: 75,
         },
         {
             title: 'Nip',
@@ -297,24 +272,7 @@ function BrowseKeberatan(props) {
         },
     ];
 
-    const data_status = [
-        {
-            key: '1',
-            no: '1',
-            nip: '199101192014021002',
-            nama: 'Fulan',
-            status: 'Penelitian Dir',
-            waktu: '22-02-20 10.20',
-        },
-        {
-            key: '2',
-            no: '2',
-            nip: '199101192014021002',
-            nama: 'Mawar',
-            status: 'Penelitian Akhir Kasi',
-            waktu: '22-02-20 10.20',
-        },
-    ];
+    const [dataStatus, setDataStatus] = useState([]);
 
     const columns_disposisi = [
         {
@@ -441,6 +399,23 @@ function BrowseKeberatan(props) {
         }
     };
 
+    useEffect(() => {
+        // ** All Fetch */
+        async function fetchData() {
+            // ** Kode Kantor */
+            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/keberatan/get-data-keberatan")
+                .then(res => res.json())
+                .then(data => {
+                    for (let x = 0; x < data.data.length; x++) {
+                        data.data[x].key = x + 1
+                        data.data[x].no = x + 1
+                    }
+                    setDataBrowse(data.data)
+                });
+        }
+        fetchData();
+    }, []);
+
     const onFinish = () => {
         setLoading(!loading);
         form
@@ -455,8 +430,8 @@ function BrowseKeberatan(props) {
                     message.success("Data Terkirim!");
                 }, 5000)
             })
-            .catch(info => {
-                console.log('Validate Failed:', info);
+            .catch(err => {
+                console.log('Validate Failed:', err);
             });
     };
 
@@ -466,21 +441,47 @@ function BrowseKeberatan(props) {
         setOriginFileObj(null) // file upld.
     };
 
+    const onFetchStatus = async idKeberatan => {
+        await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/keberatan/get-status-proses?idKeberatan=${idKeberatan}`)
+            .then(res => res.json())
+            .then(data => {
+                for (let y = 0; y < data.data.length; y++) {
+                    data.data[y].key = y + 1
+                    data.data[y].no = y + 1
+                }
+                setDataStatus(data.data)
+            })
+    }
+
+    const [rowId, setRowId] = useState(0);
+    const onClickRow = (record) => {
+        return {
+            onClick: () => {
+                setRowId(record.idKeberatan);
+                onFetchStatus(record.idKeberatan);
+            },
+        };
+    }
+
+    const setRowClassName = (record) => {
+        return record.idKeberatan === rowId ? 'clickRowStyl' : '';
+    }
+
     return (
-        <div hidden={props.hidden}>
+        <>
             <Row>
                 <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>BROWSE DATA KEBERATAN</h1>
             </Row>
             <Row>
-                <Table columns={columns_browse} dataSource={data_browse} scroll={{ x: 1500 }} bordered={true} />
+                <Table columns={columns_browse} dataSource={dataBrowse} scroll={{ x: 1500 }} bordered={true} onRow={onClickRow} rowClassName={setRowClassName} />
             </Row>
             <Row>
                 <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>STATUS PROSES</h1>
             </Row>
             <Row>
-                <Table columns={columns_data} dataSource={data_status} scroll={{ x: 1500 }} bordered={true} pagination={false} />
+                <Table columns={columns_data} dataSource={dataStatus} scroll={{ x: 1500 }} bordered={true} pagination={false} />
             </Row>
-        </div>
+        </>
     )
 }
 
