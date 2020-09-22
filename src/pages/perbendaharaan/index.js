@@ -81,7 +81,7 @@ function Perbendaharaan() {
               key="5"
               icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
             >
-              <Link to="/perbendaharaan/tampil-banding">Tampilan Banding</Link>
+              <Link to="/perbendaharaan/tampilan-banding">Tampilan Banding</Link>
             </Menu.Item>
             <Menu.Item
               key="6"
@@ -126,14 +126,6 @@ function Perbendaharaan() {
             >
               <Link to="/perbendaharaan/perekaman-permintaan-tanggapan">
                 Perekaman Permintaan Tanggapan
-              </Link>
-            </Menu.Item>
-            <Menu.Item
-              key="13"
-              icon={<FolderOpenOutlined style={{ marginLeft: -12 }} />}
-            >
-              <Link to="/perbendaharaan/perekaman-pemberitahuan-pk">
-                Perekaman Pemberitahuan PK
               </Link>
             </Menu.Item>
           </SubMenu>
