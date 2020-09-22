@@ -38,7 +38,7 @@ const tailLayoutSpacing = {
 
 const { Option } = Select;
 
-function RekamKepKeberatan(props) {
+function RekamKepKeberatan() {
     const [form] = Form.useForm();
     const [detailPIBVisible, setDetailPIBVisible] = useState(false);
     const [originFileObj, setOriginFileObj] = useState(null);
@@ -109,7 +109,7 @@ function RekamKepKeberatan(props) {
     };
 
     return (
-        <div hidden={props.hidden}>
+        <>
             <Row>
                 <h1 style={{ fontWeight: 'bold', fontSize: 24 }}>PEREKAMAN KEPUTUSAN KEBERATAN</h1>
             </Row>
@@ -889,7 +889,7 @@ function RekamKepKeberatan(props) {
                     </Form>
                 </Col>
             </Row>
-        </div>
+        </>
     )
 }
 

@@ -1,5 +1,4 @@
-import { React, useState, Form, Input, DatePicker, Row, Col, Select, Button, Checkbox, Radio, Modal, useEffect, AutoComplete, TreeSelect, message, Alert, moment } from '../../../libraries/dependencies';
-import { pungutanKeberatan } from "../../../assets/dummy/pungutanKeberatan";
+import { React, useState, useLocation, Form, Input, DatePicker, Row, Col, Select, Button, Checkbox, Radio, Modal, useEffect, AutoComplete, message, Alert, moment, InputNumber, TreeSelect, Upload, UploadOutlined } from '../../../libraries/dependencies';
 
 const customLayout = {
     labelCol: { span: 6 }, wrapperCol: { span: 0 }
@@ -46,21 +45,30 @@ const tailLayoutBtn = {
 };
 
 const { Option } = Select;
-const { TreeNode } = TreeSelect;
+// const { TreeNode } = TreeSelect;
 
 function RekamKeberatan() {
     const [form] = Form.useForm();
     const [detailPIBVisible, setDetailPIBVisible] = useState(false);
     const [jaminanPelunasanVisible, setJaminanPelunasanVisible] = useState(false);
     const [options, setOptions] = useState([]);
-    // const [optionsNpwp, setOptionsNpwp] = useState([]);
-    const [optionsKeberatan/*, setOptionKeberatan*/] = useState(pungutanKeberatan);
+    const [optionsKeberatan, setOptionKeberatan] = useState([]);
+    const [optionsKeberatanFromTarik, setOptionKeberatanFromTarik] = useState([]);
     const [optionPokokSengketa, setOptionPokokSengketa] = useState([]);
     const [value, setValue] = useState(undefined);
     const [isNpwp, setIsNpwp] = useState(false);
     const [jenisDokumen, setJenisDokumen] = useState([]);
+    const [params, setParams] = useState(false);
 
+    const disabledComponent = {
+        disabled: params
+    }
+    const location = useLocation();
     useEffect(() => {
+        if (location.state === undefined && location.state === null) return undefined;
+        if (location.state) {
+            setParams(!params);
+        }
         // ** Fetch Data */
         async function fetchData() {
             // ** Kode Kantor */
@@ -71,24 +79,144 @@ function RekamKeberatan() {
             await setOptions(arrKantor);
 
             // ** List Pungutan */
-            // let arrPungutan = []
-            // await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-pungutan")
-            //     .then(res => res.json())
-            //     .then(data => data.data.map((item) => arrPungutan.push({
-            //         kodeAkun: item.kodeAkun,
-            //         uraian: item.uraian,
-            //         key: arrPungutan.length === 0 ? 1 : arrPungutan.length + 1
-            //     })))
-            // await setOptionKeberatan(arrPungutan);
+            let arrPungutan = []
+            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-pungutan")
+                .then(res => res.json())
+                .then(data => data.data.map((item) => arrPungutan.push({
+                    kodeAkun: item.kodeAkun,
+                    uraian: item.uraian,
+                })))
+            await setOptionKeberatan(arrPungutan);
+            await setOptionKeberatanFromTarik(arrPungutan);
 
             /** Jenis Dokumen */
-            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-jenis-dokumen?keterangan=JENIS%20DOKUMEN")
+            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-jenis-dokumen?keterangan=keberatan")
                 .then(res => res.json())
                 .then(data => setJenisDokumen(data.data));
+
+
+            /** Pokok Sengketa */
+            const treeData = [];
+            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=1")
+                .then(res => res.json())
+                .then(data => data.data.map((item) => treeData.push({ title: item.namaObjekKeberatan, value: item.idObjekKeberatan })));
+            // ----------------------------------------
+            for (let x = 1; x < treeData.length; x++) {
+                if (x === 1) {
+                    let arrSptnp = [];
+                    let psIdPokok1 = [];
+                    let psIdPokok2 = [];
+                    let psIdPokok3 = [];
+                    let psSatu = [];
+                    let psDua = [];
+                    let objTingkatDua = {};
+                    let objTingkatTiga = {};
+                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
+                        .then(res => res.json())
+                        .then(data => arrSptnp.push(data.data))
+                    arrSptnp[0].slice(0, 4).map((item) =>
+                        psSatu.push({
+                            title: item.detilUraian1,
+                            value: item.idPokokSengketaKeberatan + 99 //for unique
+                        })
+                    )
+                    treeData[x - 1].children = psSatu;
+                    // ------------------------------
+                    let arrTarifUrai2 = [];
+                    let arrNilaiPabUrai2 = [];
+                    let arrTarifDanPabUrai2 = [];
+                    // let arrFTAUrai2 = [];
+                    arrSptnp[0].map((item) => {
+                        if (item.detilUraian1 === "TARIF") {
+                            arrTarifUrai2.push({
+                                title: item.detilUraian2,
+                                value: item.idPokokSengketaKeberatan
+                            });
+                            treeData[x - 1].children[0].children = arrTarifUrai2;
+                        }
+                        if (item.detilUraian1 === "NILAI PABEAN") {
+                            arrNilaiPabUrai2.push({
+                                title: item.detilUraian2,
+                                value: item.idPokokSengketaKeberatan
+                            });
+                            treeData[x - 1].children[1].children = arrNilaiPabUrai2;
+                        }
+                        if (item.detilUraian1 === "TARIF DAN PABEAN") {
+                            arrTarifDanPabUrai2.push({
+                                title: item.detilUraian2 === null ? "-" : item.detilUraian2,
+                                value: item.idPokokSengketaKeberatan
+                            });
+                            treeData[x - 1].children[2].children = arrTarifDanPabUrai2;
+                        }
+                        // if (item.detilUraian1 === "FTA") {
+                        //     arrFTAUrai2.push({
+                        //         title: item.detilUraian2,
+                        //         value: item.idPokokSengketaKeberatan
+                        //     })
+                        //     treeData[x - 1].children[3].children = arrFTAUrai2;
+                        // }
+                        if (item.detilUraian1 === "FTA") {
+                            objTingkatDua[item.detilUraian2] = objTingkatDua[item.detilUraian2]
+                        }
+                        if (item.detilUraian2 === item.detilUraian2) {
+                            objTingkatTiga[item.detilUraian3] = objTingkatTiga[item.detilUraian3]
+                        }
+                    })
+                    // ------------------------------
+                    for (let xyz = 12; xyz < 46; xyz++) {
+                        if (xyz % 3 === 0) {
+                            psIdPokok1.push(xyz)
+                        }
+                        if ((xyz + 1) % 3 === 0) {
+                            psIdPokok2.push(xyz)
+                        }
+                        if ((xyz + 2) % 3 === 0) {
+                            psIdPokok3.push(xyz)
+                        }
+                    }
+                    // ------------------------------
+                    for (let y = 0; y < Object.keys(objTingkatDua).length; y++) {
+                        psDua.push({
+                            title: Object.keys(objTingkatDua)[y],
+                            value: "30" + y
+                        })
+                    }
+                    treeData[x - 1].children[3].children = psDua;
+                    for (let z = 0; z < Object.keys(objTingkatDua).length; z++) {
+                        treeData[x - 1].children[3].children[z].children = [{
+                            title: Object.keys(objTingkatTiga)[1],
+                            value: psIdPokok1[z]
+                        }, {
+                            title: Object.keys(objTingkatTiga)[2],
+                            value: psIdPokok2[z]
+                        }, {
+                            title: Object.keys(objTingkatTiga)[3],
+                            value: psIdPokok3[z]
+                        }]
+                    }
+                    // ------------------------------
+                    treeData[x - 1].children[3].children[11].children = [{
+                        title: "LAINNYA",
+                        value: "LAINNYA"
+                    }]
+                } else if (x === x) {
+                    let psSatu = [];
+                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
+                        .then(res => res.json())
+                        .then(data => data.data.map((item) =>
+                            psSatu.push({
+                                title: item.detilUraian1,
+                                value: item.idPokokSengketaKeberatan
+                            })
+                        ));
+                    treeData[x - 1].children = psSatu;
+                }
+            }
+            await setOptionPokokSengketa(treeData);
         }
         fetchData();
 
-        // ** Set Default Kelengkapan Berkas */
+        // ** Set Field Value */
         form.setFieldsValue({
             status: "Lengkap",
             flKriteria1: "Y",
@@ -101,153 +229,97 @@ function RekamKeberatan() {
             flKriteria8: "Y",
         });
 
-        /** Pokok Sengketa */
-        async function getPK() {
-            const treeData = [];
-            // TINGKAT 1
-            // =========
-            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=1")
-                .then(res => res.json())
-                .then(data => data.data.map((item) => treeData.push({ title: item.namaObjekKeberatan, value: item.idObjekKeberatan })));
-            for (let x = 0; x < treeData.length; x++) {
-                // TINGKAT 2
-                // =========
-                if (x === 1) { // Pokok Sengketa 1
-                    // ------------ Level 2
-                    let LevelDua = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelDua.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa2
-                            })
-                        ));
-                    treeData[x - 1].LevelDua = LevelDua;
-                    // ------------- Level 3 Sengketa 4
-                    let LevelTiga = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=3&pokokSengketa=${4}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelTiga.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa3
-                            })
-                        ));
-                    treeData[x - 1].LevelDua[3].LevelTiga = LevelTiga
-                    // ------------- Level 4 Sengketa 4
-                    let LevelEmpat = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=4&pokokSengketa=${4}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelEmpat.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa4
-                            })
-                        ));
-                    treeData[x - 1].LevelDua[3].LevelTiga[0].LevelEmpat = LevelEmpat
-                } else if (x === 2) { // Pokok Sengketa 2
-                    let LevelDua = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelDua.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa2
-                            })
-                        ));
-                    treeData[x - 1].LevelDua = LevelDua;
-                } else if (x === 3) { // Pokok Sengketa 3
-                    let LevelDua = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelDua.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa2
-                            })
-                        ));
-                    treeData[x - 1].LevelDua = LevelDua;
-                } else if (x === 4) { // Pokok Sengketa 4
-                    let LevelDua = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelDua.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa2
-                            })
-                        ));
-                    treeData[x - 1].LevelDua = LevelDua
-                }
-                else if (x === 5) { // Pokok Sengketa 5
-                    let LevelDua = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelDua.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa2
-                            })
-                        ));
-                    treeData[x - 1].LevelDua = LevelDua;
-                }
-                else if (x === 6) { // Pokok Sengketa 6
-                    let LevelDua = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelDua.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa2
-                            })
-                        ));
-                    treeData[x - 1].LevelDua = LevelDua;
-                }
-                else if (x === 7) { // Pokok Sengketa 7
-                    let LevelDua = [];
-                    await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/objek-keberatan?tingkat=2&pokokSengketa=${x}`)
-                        .then(res => res.json())
-                        .then(data => data.data.map((item) =>
-                            LevelDua.push({
-                                title: item.uraian,
-                                value: item.kodePokokSengketa2
-                            })
-                        ));
-                    treeData[x - 1].LevelDua = LevelDua;
-                } else {
-                    // null
-                }
-            }
-            await setOptionPokokSengketa(treeData);
-        }
-        getPK()
-        console.log("000001/009000/2020".split('/')[2].replace("000001/009000/2020".split('/')[2], "2011"))
-    }, []);
+        // eslint-disable-next-line
+    }, [location.state]);
 
-    function onSelect(value, option, name) {
-        let val = value.substring(0, 6)
-        if (name.unique === "kodeKantorPenerbit") {
-            fetch(process.env.REACT_APP_URL + `v1/kantor/${val}`) // GET KANTOR GROUP BY KODE
-                .then(res => res.json())
-                .then(data => form.setFieldsValue({ labelKantorPenerbit: data.data.namaKantorPanjang }), form.setFieldsValue({ kodeKantorPenerbit: val })); // setSaveKodeKantorPenerbit(val)
-        } else if (name.unique === "kodeKantorMonitoring") {
-            fetch(process.env.REACT_APP_URL + `v1/kantor/${val}`) // GET KANTOR GROUP BY KODE
-                .then(res => res.json())
-                .then(data => form.setFieldsValue({ labelKantorMonitoring: data.data.namaKantorPanjang }), form.setFieldsValue({ kodeKantorMonitoring: val }));
-            fetch(`http://10.162.71.119:9090/perbendaharaan/perben/keberatan/no-agenda-kantor?kodeKantor=${val}`)
-                .then(res => res.json())
-                .then(data => form.setFieldsValue({ noAgendaKantor: data.data.noAgenda, tglAgendaKantor: moment() }))
-                .catch(err => {
-                    if (err) form.setFieldsValue({ noAgendaKantor: `000001/${val}/2020`, tglAgendaKantor: moment() });
-                })
-        } else if (name.unique === "kodeKantorTujuan") {
-            fetch(process.env.REACT_APP_URL + `v1/kantor/${val}`) // GET KANTOR GROUP BY KODE
-                .then(res => res.json())
-                .then(data => form.setFieldsValue({ labelKantorTujuan: data.data.namaKantorPanjang }), form.setFieldsValue({ kodeKantorTujuan: val }));
+    function generateSequence(noAgenda) {
+        const result = noAgenda.split("/")
+        const first = parseInt(result[0]) + 1 // seq
+        const second = result[1] // agenda kantor
+        const three = result[2] // year now
+
+        if (String(first).length === 1) {
+            return `${"00000" + first}/${second}/${three}`
+        } else if (String(first).length === 2) {
+            return `${"0000" + first}/${second}/${three}`
+        } else if (String(first).length === 3) {
+            return `${"000" + first}/${second}/${three}`
+        } else if (String(first).length === 4) {
+            return `${"00" + first}/${second}/${three}`
+        } else if (String(first).length === 5) {
+            return `${"0" + first}/${second}/${three}`
+        } else {
+            return `${first}/${second}/${three}`
         }
     }
 
+    const [visibleTanggalAgendaKantor, setVisibleTanggalAgendaKantor] = useState(true);
+    function onSelectKodeKantor(value, option, name) {
+        const kodeKantor = value.substring(0, 6); // Character Ke 1 - 6
+        const yearNow = moment().format('YYYY');
+        if (name.unique === "kodeKantorPenerbit") {
+            fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-kantor?search=${kodeKantor}`) // GET KANTOR GROUP BY KODE
+                .then(res => res.json())
+                .then(data => form.setFieldsValue({ labelKantorPenerbit: data.data[0].namaKantorPanjang }), form.setFieldsValue({ kodeKantorPenerbit: kodeKantor }));
+        } else if (name.unique === "kodeKantorMonitoring") {
+            fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-kantor?search=${kodeKantor}`) // GET KANTOR GROUP BY KODE
+                .then(res => res.json())
+                .then(data => form.setFieldsValue({ labelKantorMonitoring: data.data[0].namaKantorPanjang }), form.setFieldsValue({ kodeKantorMonitoring: kodeKantor }));
+            fetch(`http://10.162.71.119:9090/perbendaharaan/perben/keberatan/no-agenda-kantor?kodeKantor=${kodeKantor}&tahun=${yearNow}`)
+                .then(res => res.json())
+                .then(data => form.setFieldsValue({ noAgendaKantor: generateSequence(data.data.noAgenda), tglAgendaKantor: moment() }))
+                .catch(err => {
+                    if (err) form.setFieldsValue({ noAgendaKantor: `000001/${kodeKantor}/2020`, tglAgendaKantor: moment() });
+                })
+            setVisibleTanggalAgendaKantor(false);
+        } else if (name.unique === "kodeKantorTujuan") {
+            fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-kantor?search=${kodeKantor}`) // GET KANTOR GROUP BY KODE
+                .then(res => res.json())
+                .then(data => form.setFieldsValue({ labelKantorTujuan: data.data[0].namaKantorPanjang }), form.setFieldsValue({ kodeKantorTujuan: kodeKantor }));
+        }
+    }
+
+    async function onSetKodeKantorPenerbit(kodeKantor) {
+        await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-kantor?search=${kodeKantor}`)
+            .then(res => res.json())
+            .then(data => form.setFieldsValue({ labelKantorPenerbit: data.data[0].namaKantorPanjang, kodeKantorPenerbit: data.data[0].kodeKantor }));
+    }
+
+    async function onSetKodeKantorMonitoring(kodeKantor) {
+        const yearNow = moment().format('YYYY');
+        const getKodeNow = [];
+        await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-kantor?search=${kodeKantor}`)
+            .then(res => res.json())
+            .then(data => {
+                form.setFieldsValue({ labelKantorMonitoring: data.data[0].namaKantorPanjang, kodeKantorMonitoring: data.data[0].kodeKantor });
+                getKodeNow.push(data.data[0].kodeKantor);
+            });
+
+        await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/keberatan/no-agenda-kantor?kodeKantor=${getKodeNow[0]}&tahun=${yearNow}`)
+            .then(res => res.json())
+            .then(data => form.setFieldsValue({ noAgendaKantor: generateSequence(data.data.noAgenda), tglAgendaKantor: moment() }))
+            .catch(err => {
+                if (err) form.setFieldsValue({ noAgendaKantor: `000001/${getKodeNow[0]}/2020`, tglAgendaKantor: moment() });
+            })
+        await setVisibleTanggalAgendaKantor(false);
+    }
+
+    const onTanggalAgendaKantor = (date, dateString) => {
+        if (date === null) return null;
+        const yearNow = date.format('YYYY') || "";
+        const noAgenda = form.getFieldValue("noAgendaKantor");
+        const kodeKantor = noAgenda.split("/")[1]
+        fetch(`http://10.162.71.119:9090/perbendaharaan/perben/keberatan/no-agenda-kantor?kodeKantor=${kodeKantor}&tahun=${yearNow}`)
+            .then(res => res.json())
+            .then(data => form.setFieldsValue({ noAgendaKantor: generateSequence(data.data.noAgenda) }))
+            .catch(err => {
+                if (err) {
+                    form.setFieldsValue({ noAgendaKantor: `000001/${kodeKantor}/${yearNow}` });
+                }
+            })
+    }
+
+    const [nipPetugas, setNipPetguas] = useState("");
     const onFinish = values => {
         let loopObj = optionsKeberatan.map(({ kodeAkun, uraian }) => ({
             idAkun: parseInt(kodeAkun),
@@ -256,10 +328,12 @@ function RekamKeberatan() {
         loopObj = loopObj.filter(item => item.nilaiKeberatan !== undefined);
         for (let x = 0; x < loopObj.length; x++) {
             loopObj[x].idKeberatan = x + 1
+            loopObj[x].idAkun = String(loopObj[x].idAkun);
+            loopObj[x].nilaiKeberatan = String(loopObj[x].nilaiKeberatan);
         }
         const bodyData = {
             listTdKeberatanNilai: loopObj,
-            nipRekam: "string", // localStorage
+            nipRekam: "090000000000000000", // || nip from localStorage || nipPetugas
             tdKeberatan: {
                 alamat: values.alamat,
                 alasan: values.alasan,
@@ -273,17 +347,22 @@ function RekamKeberatan() {
                 flKriteria8: values.flKriteria8,
                 flagJaminan: values.flagJaminan,
                 idHeaderPenetapan: values.idHeaderPenetapan, // Jenis Dokumen || GET /perben/piutang/get-data-browse dan Refrensi
-                idHeaderPib: "string", // GET /perben/piutang/get-data-browse
+                idHeaderPib: values.idHeaderPenetapan, // GET /perben/piutang/get-data-browse
+                idKeberatan: "",
                 idPerusahaan: values.idPerusahaan, // values.idPerusahaan || NPWP
+                idProsesKeberatan: "",
                 kodeKantorMonitoring: values.kodeKantorMonitoring,
                 kodeKantorPenerbit: values.kodeKantorPenerbit,
                 kodeKantorTujuan: values.kodeKantorTujuan,
                 noAgenda: values.noAgendaKantor, // dari get browse data keberatan
+                noSurat: values.noSuratKeberatan,
                 noSuratPernyataan: values.noSuratPernyataan,
                 pokokSengketa3: values.pokokSengketa3,
                 status: values.status,
                 tglAgenda: moment(values.tglAgendaKantor).format('YYYY-MM-DD'),
-                tglJatuhTempo: values.tglJatuhTempo
+                tglJatuhTempo: moment(values.tglAgendaKantor).add(60, 'days').format('YYYY-MM-DD'),
+                tglSurat: moment(values.tglSuratKeberatan).format('YYYY-MM-DD'),
+                uraianPokokSengketa: values.uraianPokokSengketa === undefined ? "" : values.uraianPokokSengketa
             }
         }
         fetch("http://10.162.71.119:9090/perbendaharaan/perben/keberatan/simpan-keberatan", {
@@ -307,11 +386,14 @@ function RekamKeberatan() {
                     flKriteria7: "Y",
                     flKriteria8: "Y",
                 });
+                setValue([]);
                 setHiddenSearch(true);
                 message.success("Data Berhasil di Tambahkan!");
             })
-            .catch(err => message.error("Data Gagal di Kirimkan!"));
-        console.log(bodyData, 'ini body')
+            .catch(err => {
+                console.log(err, "[ERROR] - Data Gagal di Kirimkan!");
+                message.error("Data Gagal di Kirimkan!");
+            });
     };
 
     const onReset = () => {
@@ -350,103 +432,211 @@ function RekamKeberatan() {
         }
     }
 
-    const onChange = val => {
-        if (val.length > 1) { return message.info("Maksimal 1 Sengketa Yang diPilih!") }
-        setValue(val);
+    const onChangePokokSengketa = (value, selectedOptions) => {
+        if (value.length > 1) { return message.info("Maksimal 1 Sengketa Yang diPilih!") }
+        setValue(value);
     };
+
 
     const [inputSengketa, setInputSengketa] = useState(true);
     const onSelectSengketa = async (value, label, extra) => {
-        if (value === "LAINNYA") {
+        if (label.title === "LAINNYA") {
             setInputSengketa(!inputSengketa);
             setValue([]);
-            form.setFieldsValue({ pokokSengketa3: "" });
+            form.setFieldsValue({ pokokSengketa3: value });
         } else {
             setInputSengketa(true);
-            form.setFieldsValue({ pokokSengketa3: value });
+            form.setFieldsValue({ pokokSengketa3: value, uraianPokokSengketa: "" });
         }
     }
 
     const [messageSearch, setMessageSearch] = useState("");
+    const [descriptionSearch, setDescriptionSearch] = useState("");
     const [typeSearch, setTypesSearch] = useState("");
-    const [hiddenSearch, setHiddenSearch] = useState(false);
-    const onSearch = async ({ value, name }) => {
-        if (name === "onInput") {
-            await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-perusahaan?search=${value}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.data.length > 1) {
-                        setMessageSearch(`Data Yang di Masukkan Kurang Spesifik.`);
-                        setTypesSearch("info");
-                        setHiddenSearch(true);
-                    }
-                    setMessageSearch(`Data NPWP Yang di Maksud: ${data.data.data[0].npwp}.`);
-                    setTypesSearch("success");
+    const [hiddenSearch, setHiddenSearch] = useState(true);
+    const onChangeNpwp = async (val) => {
+        if (val === "") {
+            form.setFieldsValue({ alamat: "" });
+            return setHiddenSearch(true);
+        }
+        await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-perusahaan?search=${val}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.data.data.length > 1) {
+                    setMessageSearch("[INFO]");
+                    setDescriptionSearch("NPWP Yang di Masukkan Kurang Spesifik.");
+                    setTypesSearch("info");
+                    return setHiddenSearch(false);
+                }
+                if (data.data.data[0].kodeId === "2" || data.data.data[0].kodeId === "3" || data.data.data[0].kodeId === "4" || data.data.data[0].kodeId === "6" || data.data.data[0].kodeId === "7") {
+                    setIsNpwp(true);
                     setHiddenSearch(true);
-                    form.setFieldsValue({ idPerusahaan: data.data.data[0].idPerusahaan });
-                }).catch(err => {
-                    if (err) {
-                        setMessageSearch("Data Tidak di Temukan!");
-                        setTypesSearch("error");
-                        setHiddenSearch(true);
-                    }
-                })
-        } else if (name === "onPenetapan") {
-            await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-perusahaan?search=${value}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.data.length > 1) {
-                        setMessageSearch(`Data Yang di Masukkan Kurang Spesifik.`);
-                        setTypesSearch("info");
-                        setHiddenSearch(true);
-                    }
-                    setMessageSearch(`Data NPWP Yang di Maksud: ${data.data.data[0].npwp}.`);
-                    setTypesSearch("success");
+                    return form.setFieldsValue({ idPerusahaan: data.data.data[0].idPerusahaan, alamat: data.data.data[0].alamatPerusahaan });
+                }
+                setMessageSearch("[SUCCESS]");
+                setDescriptionSearch(`NPWP Yang di Maksud: ${data.data.data[0].npwp}.`);
+                setTypesSearch("success");
+                setHiddenSearch(false);
+                setIsNpwp(false);
+                form.setFieldsValue({ idPerusahaan: data.data.data[0].idPerusahaan, alamat: data.data.data[0].alamatPerusahaan });
+            }).catch(err => {
+                if (err) {
+                    setMessageSearch("[ERROR]");
+                    setDescriptionSearch("Data Tidak di Temukan!");
+                    setTypesSearch("error");
+                    setHiddenSearch(false);
+                    form.setFieldsValue({ idPerusahaan: "", alamat: "" })
+                }
+            })
+    }
+
+    const onSetNpwp = async (val) => {
+        await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-perusahaan?search=${val}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.data.data[0].kodeId === "2" || data.data.data[0].kodeId === "3" || data.data.data[0].kodeId === "4" || data.data.data[0].kodeId === "6" || data.data.data[0].kodeId === "7") {
+                    setIsNpwp(true);
                     setHiddenSearch(true);
-                    form.setFieldsValue({ idPerusahaan: data.data.data[0].idPerusahaan, npwp: data.data.data[0].npwp });
-                }).catch(err => {
-                    if (err) {
-                        setMessageSearch("Data Tidak di Temukan!");
-                        setTypesSearch("error");
-                        setHiddenSearch(true);
-                    }
-                })
+                    return form.setFieldsValue({ idPerusahaan: data.data.data[0].idPerusahaan, alamat: data.data.data[0].alamatPerusahaan });
+                }
+                setMessageSearch("[SUCCESS]");
+                setDescriptionSearch(`NPWP Yang di Maksud: ${data.data.data[0].npwp}.`);
+                setTypesSearch("success");
+                setHiddenSearch(false);
+                setIsNpwp(false);
+                form.setFieldsValue({ idPerusahaan: data.data.data[0].idPerusahaan, alamat: data.data.data[0].alamatPerusahaan, npwp: data.data.data[0].npwp });
+            }).catch(err => {
+                if (err) {
+                    setMessageSearch("[ERROR]");
+                    setDescriptionSearch("Data Tidak di Temukan!");
+                    setTypesSearch("error");
+                    setHiddenSearch(false);
+                }
+            })
+    }
+
+    const onCheckNpwp = e => {
+        setIsNpwp(e.target.checked);
+        if (e.target.checked === true) {
+            if (Object.values(form.getFieldValue("npwp")).length > 0) {
+                return setHiddenSearch(true);
+            }
+            form.setFieldsValue({
+                idPerusahaan: "",
+                alamat: ""
+            })
+        } else {
+            if (Object.values(form.getFieldValue("npwp")).length > 0) {
+                return setHiddenSearch(true);
+            }
+            form.setFieldsValue({
+                npwp: ""
+            })
         }
     }
 
-    const onCheckbox = e => {
-        if (e.target.checked === true) {
-            setIsNpwp(true);
-        } else {
-            setIsNpwp(false);
+    const currencyFormatter = selectedCurrOpt => value => {
+        return new Intl.NumberFormat(locale, {
+            style: "currency",
+            currency: selectedCurrOpt.split("::")[1]
+        }).format(value);
+    };
+
+    const locale = "en-us";
+    const currencyParser = val => {
+        try {
+            // for when the input gets clears
+            if (typeof val === "string" && !val.length) {
+                val = "0.0";
+            }
+
+            // detecting and parsing between comma and dot
+            var group = new Intl.NumberFormat(locale).format(1111).replace(/1/g, "");
+            var decimal = new Intl.NumberFormat(locale).format(1.1).replace(/1/g, "");
+            var reversedVal = val.replace(new RegExp("\\" + group, "g"), "");
+            reversedVal = reversedVal.replace(new RegExp("\\" + decimal, "g"), ".");
+            //  => 1232.21 €
+
+            // removing everything except the digits and dot
+            reversedVal = reversedVal.replace(/[^0-9.]/g, "");
+            //  => 1232.21
+
+            // appending digits properly
+            const digitsAfterDecimalCount = (reversedVal.split(".")[1] || []).length;
+            const needsDigitsAppended = digitsAfterDecimalCount > 2;
+
+            if (needsDigitsAppended) {
+                reversedVal = reversedVal * Math.pow(10, digitsAfterDecimalCount - 2);
+            }
+
+            return Number.isNaN(reversedVal) ? 0 : reversedVal;
+        } catch (err) {
+            console.err(err, "[ERROR] - Currency Parser!");
         }
+    };
+
+    function mergeArrayObjectsPungutan(arr1, arr2) {
+        const arrMerged = [];
+        const map = new Map();
+        arr1.forEach(item => map.set(item.kodeAkun, item));
+        arr2.forEach(item => map.set(item.kode, { ...map.get(item.kode), ...item }));
+        const arrThree = Array.from(map.values());
+        for (let x = 0; x < arrThree.length; x++) {
+            let keyOne = arrThree[x].kodeAkun.match(/[0-9]/g) ? arrThree[x].kode : arrThree[x].kodeAkun
+            let keyTwo = arrThree[x].uraian;
+            let keyThree = arrThree[x].nilai === undefined ? null : arrThree[x].nilai;
+            let newObj = {
+                kodeAkun: keyOne,
+                uraian: keyTwo,
+                nilai: keyThree,
+            }
+            arrMerged.push(newObj);
+        }
+        setOptionKeberatan(arrMerged);
     }
 
     const onPenetapan = () => {
         const noPenetapan = form.getFieldValue("noPenetapan")
-        const tglPenetapan = moment(form.getFieldValue("tglPenetapan")).format('YYYY-MM-DD');
+        const tglPenetapan = moment(form.getFieldValue("tglPenetapan")).format('DD-MM-YYYY');
         const noDokumen = form.getFieldValue("jenisDokumen");
         fetch(`http://10.162.71.119:9090/perbendaharaan/perben/piutang/get-data-browse?browse=${noPenetapan}&tanggalDokumen=${tglPenetapan}&jenisDokumen=${noDokumen}`)
             .then(res => res.json())
             .then(async data => {
+                mergeArrayObjectsPungutan(optionsKeberatanFromTarik, data.data[0].pungutan.data);
                 form.setFieldsValue({
-                    kodeKantorMonitoring: data.data[0].kodeKantorMonitoring || "", // || data.data[0].kantorMonitor
-                    kodeKantorPenerbit: data.data[0].kodeKantorPenerbit || "", // || data.data[0].kantorPenerbit
-                    kodeKantorTujuan: data.data[0].kodeKantorTujuan || "", // || data.data[0].kantorTujuan
                     idHeaderPenetapan: data.data[0].idHeader,
                     alamat: data.data[0].alamatPerusahaan,
-                    tglJatuhTempo: data.data[0].tanggalJatuhTempo.split(' ')[0]
+                    npwp: data.data[0].npwpPerusahaan,
+                    noPIB: data.data[0].nomorDokumen,
+                    tglPIB: moment(data.data[0].tanggalDokumen, "DD-MM-YYYY")
                 });
-                onSearch({ value: data.data[0].npwpPerusahaan, name: "onPenetapan" });
-                onSelect(data.data[0].kodeKantorPenerbit || "", null, { unique: "kodeKantorPenerbit" });
-                onSelect(data.data[0].kodeKantorMonitoring || "", null, { unique: "kodeKantorMonitoring" });
-                onSelect(data.data[0].kodeKantorTujuan || "", null, { unique: "kodeKantorTujuan" });
-                message.success("Data di Temukan!");
+                await data.data[0].pungutan.data.map(({ kodeAkun, nilai }) => {
+                    const obj = {}
+                    obj[kodeAkun] = nilai
+                    form.setFieldsValue(obj)
+                })
+                await setNipPetguas(data.data[0].nipPetugas1);
+                await onSetNpwp(data.data[0].npwpPerusahaan);
+                await onSetKodeKantorPenerbit(data.data[0].kantorPenerbit);
+                await onSetKodeKantorMonitoring(data.data[0].kantorMonitor);
+                await message.success("Data di Temukan!");
             })
-            .catch(err => message.error("Data Tidak di Temukan!"))
+            .catch(err => {
+                console.log(err, '[ERROR] - Data Tidak di Temukan!');
+                message.error("Data Tidak di Temukan!");
+            });
     }
 
     const secondColumnStart = Math.floor(optionsKeberatan.length / 2);
+
+
+    const fileList = [];
+
+    const props = {
+        action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+        listType: 'picture',
+        defaultFileList: [...fileList],
+    };
 
     return (
         <>
@@ -466,6 +656,7 @@ function RekamKeberatan() {
                                             rules={[{ required: true, message: "Kode Kantor Penerbit Tidak Boleh Kosong!" }]}
                                         >
                                             <AutoComplete
+                                                {...disabledComponent}
                                                 style={{
                                                     width: '100%',
                                                 }}
@@ -475,7 +666,7 @@ function RekamKeberatan() {
                                                     option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
                                                 }
                                                 autoFocus={false}
-                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorPenerbit" })}
+                                                onSelect={(value, option) => onSelectKodeKantor(value, option, { unique: "kodeKantorPenerbit" })}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -485,7 +676,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -499,6 +690,7 @@ function RekamKeberatan() {
                                             rules={[{ required: true, message: "Kode Kantor Monitoring Tidak Boleh Kosong!" }]}
                                         >
                                             <AutoComplete
+                                                {...disabledComponent}
                                                 style={{
                                                     width: '100%',
                                                 }}
@@ -508,7 +700,7 @@ function RekamKeberatan() {
                                                     option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
                                                 }
                                                 autoFocus={false}
-                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorMonitoring" })}
+                                                onSelect={(value, option) => onSelectKodeKantor(value, option, { unique: "kodeKantorMonitoring" })}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -518,7 +710,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -532,6 +724,7 @@ function RekamKeberatan() {
                                             rules={[{ required: true, message: "Kode Kantor Penerusan Tidak Boleh Kosong!" }]}
                                         >
                                             <AutoComplete
+                                                {...disabledComponent}
                                                 style={{
                                                     width: '100%',
                                                 }}
@@ -541,7 +734,7 @@ function RekamKeberatan() {
                                                     option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
                                                 }
                                                 autoFocus={false}
-                                                onSelect={(value, option) => onSelect(value, option, { unique: "kodeKantorTujuan" })}
+                                                onSelect={(value, option) => onSelectKodeKantor(value, option, { unique: "kodeKantorTujuan" })}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -551,7 +744,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -564,7 +757,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
@@ -573,7 +766,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <DatePicker style={{ width: '100%' }} format={'YYYY/MM/DD'} />
+                                            <DatePicker {...disabledComponent} style={{ width: '100%' }} format={'DD-MM-YYYY'} onChange={onTanggalAgendaKantor} disabled={visibleTanggalAgendaKantor} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -586,7 +779,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
@@ -595,7 +788,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <DatePicker style={{ width: '100%' }} format={'YYYY/MM/DD'} />
+                                            <DatePicker {...disabledComponent} style={{ width: '100%' }} format={'DD-MM-YYYY'} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -608,18 +801,17 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input placeholder="Masukkan NPWP" onChange={(e) => onSearch({ value: e.target.value, name: "onInput" })} />
+                                            <Input {...disabledComponent} placeholder="Masukkan NPWP" onChange={(e) => onChangeNpwp(e.target.value)} allowClear />
                                         </Form.Item>
-                                        <Alert message={messageSearch} type={typeSearch} hidden={hiddenSearch} style={{ position: hiddenSearch ? 'relative' : 'absolute' }} />
+                                        <Alert
+                                            message={messageSearch}
+                                            description={descriptionSearch}
+                                            type={typeSearch}
+                                            style={{ display: hiddenSearch ? 'none' : '' }}
+                                        />
                                     </Col>
                                     <Col span={12}>
-                                        {/* <Form.Item
-                                            name="isNpwp"
-                                            noStyle
-                                            rules={[{ required: true, message: "NPWP Tidak Boleh Kosong!" }]}
-                                        > */}
-                                        <Checkbox onChange={onCheckbox} checked={isNpwp}><span style={{ fontSize: 12 }}>* Bukan NPWP (BARKIR / Contoh -KTP)</span></Checkbox>
-                                        {/* </Form.Item> */}
+                                        <Checkbox {...disabledComponent} onChange={onCheckNpwp} checked={isNpwp}><span style={{ fontSize: 12 }}>* Bukan NPWP (BARKIR / Contoh -KTP)</span></Checkbox>
                                     </Col>
                                 </Row>
                             </Form.Item>
@@ -627,13 +819,10 @@ function RekamKeberatan() {
                                 <Input />
                             </Form.Item>
                             <Form.Item {...tailLayoutSmall} name="alamat" label="Alamat" rules={[{ required: false }]} colon={false}>
-                                <Input.TextArea />
+                                <Input.TextArea {...disabledComponent} />
                             </Form.Item>
                             <Form.Item {...tailLayoutSmall} name="idHeaderPenetapan" label="idHeaderPenetapan" rules={[{ required: false }]} colon={false} hidden={true}>
                                 <Input />
-                            </Form.Item>
-                            <Form.Item {...tailLayoutSmall} name="tglJatuhTempo" label="tglJatuhTempo" rules={[{ required: false }]} colon={false} hidden={true}>
-                                <input type="date" />
                             </Form.Item>
                             <Form.Item {...tailLayoutLarge} label="No Penetapan / Tanggal" colon={false}>
                                 <Row gutter={8}>
@@ -643,9 +832,8 @@ function RekamKeberatan() {
                                             label="jenisDokumen"
                                             noStyle
                                             rules={[{ required: false }]}
-
                                         >
-                                            <Select dropdownMatchSelectWidth={300}>
+                                            <Select {...disabledComponent} dropdownMatchSelectWidth={300} >
                                                 {jenisDokumen.map((item) => (
                                                     <Option value={item.kodeDokumen} key={item.kodeDokumen}>{item.uraianDokumen}</Option>
                                                 ))}
@@ -658,7 +846,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
@@ -667,11 +855,11 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <DatePicker style={{ width: '100%' }} format={'YYYY/MM/DD'} />
+                                            <DatePicker {...disabledComponent} style={{ width: '100%' }} format={'DD-MM-YYYY'} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={2}>
-                                        <Button type="info" htmlType="button" style={{ width: '100%' }} onClick={onPenetapan}>
+                                        <Button {...disabledComponent} type="info" htmlType="button" style={{ width: '100%' }} onClick={onPenetapan}>
                                             Cari
                                         </Button>
                                     </Col>
@@ -685,7 +873,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
@@ -694,11 +882,11 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <DatePicker style={{ width: '100%' }} format={'YYYY/MM/DD'} />
+                                            <DatePicker {...disabledComponent} style={{ width: '100%' }} format={'DD-MM-YYYY'} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
-                                        <Button type="primary" style={{ width: '100%' }} onClick={() => showModal("detailPIB")}>
+                                        <Button {...disabledComponent} type="primary" style={{ width: '100%' }} onClick={() => showModal("detailPIB")}>
                                             Lihat Detail PIB
                                         </Button>
                                         <Modal
@@ -714,43 +902,56 @@ function RekamKeberatan() {
                                     </Col>
                                 </Row>
                             </Form.Item>
-                            <Form.Item {...tailLayoutSmall} label="Pokok Sengketa" colon={false}>
-                                <TreeSelect
-                                    // showSearch
-                                    style={{ width: '100%' }}
-                                    value={value}
-                                    dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                    placeholder="Pilih atau Cari Sengketa.."
-                                    allowClear
-                                    multiple
-                                    // treeDefaultExpandAll
-                                    onChange={onChange}
-                                    onSelect={onSelectSengketa}
-                                    name="pokokSengketa3"
-                                >
-                                    {optionPokokSengketa && optionPokokSengketa.map((item) => (
-                                        <TreeNode value={item.title} title={<b>{item.title}</b>} key={item.title}>
-                                            {item.LevelDua && item.LevelDua.map((item_dua) => (
-                                                <TreeNode value={item_dua.title} title={item_dua.title} key={item_dua.title}>
-                                                    {item_dua.LevelTiga !== undefined ?
-                                                        item_dua.LevelTiga.map((item_tiga) => (
-                                                            <TreeNode value={item_tiga.title} title={item_tiga.title} key={item_tiga.title}>
-                                                                {item_tiga.LevelEmpat !== undefined ?
-                                                                    item_tiga.LevelEmpat.map((item_empat) => (
-                                                                        <TreeNode value={item_empat.title} title={item_empat.title} key={item_empat.title} />
-                                                                    ))
-                                                                    : null}
-                                                            </TreeNode>
-                                                        ))
-                                                        : null}
+                            <Form.Item {...tailLayoutMedium} label="Pokok Sengketa" colon={false}>
+                                <Row gutter={8}>
+                                    <Col span={16}>
+                                        <Form.Item
+                                            name="pokokSengketa3"
+                                            noStyle
+                                            rules={[{ required: false }]}
+                                        >
+                                            <TreeSelect
+                                                style={{ width: '100%' }}
+                                                value={value}
+                                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                                placeholder="- Pilih Sengketa -"
+                                                allowClear
+                                                multiple
+                                                onChange={onChangePokokSengketa}
+                                                onSelect={onSelectSengketa}
+                                                treeData={optionPokokSengketa}
+                                                showSearch={false}
+                                            >
+                                                {/* {optionPokokSengketa && optionPokokSengketa.map((item) => (
+                                                <TreeNode value={item.value} title={<b>{item.title}</b>} key={item.value}>
+                                                    {item.children !== undefined ? item.children && item.children.map((item_dua) => (
+                                                        <TreeNode value={item_dua.value} title={item_dua.title} key={item_dua.value}>
+                                                            {item_dua.children !== undefined ? item_dua.children && item_dua.children.map((item_tiga) => (
+                                                                <TreeNode value={item_tiga.value} title={item_tiga.title} key={item_tiga.value}>
+                                                                    {item_tiga.children !== undefined ? item_tiga.children && item_tiga.children.map((item_empat) => (
+                                                                        <TreeNode value={item_empat.value} title={item_empat.title} key={item_empat.value} />
+                                                                    )) : null}
+                                                                </TreeNode>
+                                                            )) : null}
+                                                        </TreeNode>
+                                                    )) : null}
                                                 </TreeNode>
-                                            ))}
-                                        </TreeNode>
-                                    ))}
-                                </TreeSelect>
-                                <Form.Item {...tailLayoutMedium} name="pokokSengketa3" rules={[{ required: false }]} colon={false} hidden={inputSengketa} style={{ marginTop: 18, marginBottom: 0 }}>
-                                    <Input placeholder="Input Manual" />
-                                </Form.Item>
+                                            ))} */}
+                                            </TreeSelect>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Form.Item
+                                            name="uraianPokokSengketa"
+                                            rules={[{ required: false }]}
+                                            noStyle
+                                            colon={false}
+                                            hidden={inputSengketa}
+                                        >
+                                            <Input placeholder="Input Manual" />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
                             </Form.Item>
                             <Form.Item {...tailLayoutLarge} label="Jaminan / Pelunasan" colon={false}>
                                 <Row gutter={8}>
@@ -760,7 +961,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Select>
+                                            <Select {...disabledComponent}>
                                                 <Option value="Jaminan">Jaminan</Option>
                                                 <Option value="Pelunasan">Pelunasan</Option>
                                                 <Option value="Tidak Wajib Meyerahkan Jaminan">Tidak Wajib Meyerahkan Jaminan</Option>
@@ -773,7 +974,7 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <Input />
+                                            <Input {...disabledComponent} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
@@ -782,11 +983,11 @@ function RekamKeberatan() {
                                             noStyle
                                             rules={[{ required: false }]}
                                         >
-                                            <DatePicker style={{ width: '100%' }} format={'YYYY/MM/DD'} />
+                                            <DatePicker {...disabledComponent} style={{ width: '100%' }} format={'DD-MM-YYYY'} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={6}>
-                                        <Button type="primary" style={{ width: '100%' }} onClick={() => showModal("jaminanPelunasan")}>
+                                        <Button {...disabledComponent} type="primary" style={{ width: '100%' }} onClick={() => showModal("jaminanPelunasan")}>
                                             Cari
                                         </Button>
                                         <Modal
@@ -814,30 +1015,48 @@ function RekamKeberatan() {
                             </Form.Item>
                             <Row gutter={8}>
                                 <Col span={12}>
-                                    {
+                                    {optionsKeberatan &&
                                         optionsKeberatan.slice(0, secondColumnStart).map((item) => (
-                                            <Form.Item colon={false} {...tailLayoutExtraSmallCustom} wrapperCol={{ offset: 0, span: 8 }} labelCol={{ span: 12 }} label={item.uraian} key={/**item.kodeAkun */item.uraian}>
+                                            <Form.Item colon={false} {...tailLayoutExtraSmallCustom} wrapperCol={{ offset: 0, span: 8 }} labelCol={{ span: 12 }} label={item.uraian} key={item.uraian}>
                                                 <Form.Item
                                                     name={item.uraian}
                                                     noStyle
                                                     rules={[{ required: false }]}
                                                 >
-                                                    <Input type="number" />
+                                                    <InputNumber
+                                                        style={{
+                                                            width: 175,
+                                                            marginRight: "1rem"
+                                                        }}
+                                                        formatter={currencyFormatter("INDONESIA::IDR")}
+                                                        parser={currencyParser}
+                                                        // disabled={item.nilai === null ? true : false}
+                                                        {...disabledComponent}
+                                                    />
                                                 </Form.Item>
                                             </Form.Item>
                                         ))
                                     }
                                 </Col>
                                 <Col span={12} style={{ textAlign: "right", display: 'block' }}>
-                                    {
+                                    {optionsKeberatan &&
                                         optionsKeberatan.slice(secondColumnStart).map((item) => (
-                                            <Form.Item colon={false} {...tailLayoutExtraSmallCustom} wrapperCol={{ offset: 0, span: 8 }} labelCol={{ span: 12 }} label={item.uraian} key={/**item.kodeAkun */item.uraian}>
+                                            <Form.Item colon={false} {...tailLayoutExtraSmallCustom} wrapperCol={{ offset: 0, span: 8 }} labelCol={{ span: 12 }} label={item.uraian} key={item.uraian}>
                                                 <Form.Item
                                                     name={item.uraian}
                                                     noStyle
                                                     rules={[{ required: false }]}
                                                 >
-                                                    <Input type="number" />
+                                                    <InputNumber
+                                                        style={{
+                                                            width: 175,
+                                                            marginRight: "1rem"
+                                                        }}
+                                                        formatter={currencyFormatter("INDONESIA::IDR")}
+                                                        parser={currencyParser}
+                                                        // disabled={item.nilai === null ? true : false}
+                                                        {...disabledComponent}
+                                                    />
                                                 </Form.Item>
                                             </Form.Item>
                                         ))
@@ -849,11 +1068,11 @@ function RekamKeberatan() {
                     </Col >
                 </Row >
                 <Row>
-                    <h1 style={{ fontWeight: 'bold', fontSize: 16, paddingLeft: 16 }}>CEK KELENGKAPAN BERKAS</h1>
+                    <h1 style={{ fontWeight: 'bold', fontSize: 16, paddingLeft: 16 }} hidden={params === false ? false : true}>CEK KELENGKAPAN BERKAS</h1>
                 </Row>
                 <Row>
                     <Col span={24}>
-                        <Form {...normalLayout} form={form} labelAlign={"left"} size={"small"} onFinish={onFinish} style={{ paddingLeft: 16 }}>
+                        <Form {...normalLayout} form={form} labelAlign={"left"} size={"small"} onFinish={onFinish} style={{ paddingLeft: 16 }} hidden={params === false ? false : true}>
                             <Form.Item style={{ marginBottom: 0 }}>
                                 <Row gutter={8}>
                                     <Col span={18}>
@@ -994,14 +1213,23 @@ function RekamKeberatan() {
                             <Form.Item {...tailLayoutExtraSmall} name="status" label="Status" rules={[{ required: false }]}>
                                 <Input />
                             </Form.Item>
+                        </Form>
+                        <Form {...normalLayout} form={form} labelAlign={"left"} size={"small"} onFinish={onFinish} style={{ paddingLeft: 16 }}>
                             <Form.Item {...tailLayoutExtraSmall} name="keputusan" label="Keputusan" rules={[{ required: false }]}>
-                                <Select>
+                                <Select {...disabledComponent}>
                                     <Option value="Terima">Terima</Option>
                                     <Option value="Kembalikan">Kembalikan</Option>
                                 </Select>
                             </Form.Item>
                             <Form.Item {...tailLayoutSmall} name="alasan" label="Alasan" rules={[{ required: false }]}>
-                                <Input.TextArea />
+                                <Input.TextArea {...disabledComponent} />
+                            </Form.Item>
+                            <Form.Item {...tailLayoutSmall} label="Upload Berkas" rules={[{ required: false }]} hidden={params === false ? true : false}>
+                                <Upload {...props} style={{ width: "100%" }}>
+                                    <Button style={{ width: "100%" }}>
+                                        <UploadOutlined style={{ width: "100%" }} type="primary" htmltype="button" />
+                                    </Button>
+                                </Upload>
                             </Form.Item>
                             <Form.Item {...tailLayoutBtn}>
                                 <Row gutter={8}>
@@ -1011,7 +1239,7 @@ function RekamKeberatan() {
                                         </Button>
                                     </Col>
                                     <Col span={12}>
-                                        <Button type="primary" htmlType="button" style={{ width: '100%' }} onClick={onReset}>
+                                        <Button type="primary" htmltype="button" style={{ width: '100%' }} onClick={() => onReset}>
                                             Batal
                                         </Button>
                                     </Col>

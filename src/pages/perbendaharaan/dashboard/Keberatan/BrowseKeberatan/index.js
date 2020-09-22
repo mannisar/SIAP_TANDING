@@ -1,4 +1,4 @@
-import { React, UploadOutlined, Form, Row, Col, Input, DatePicker, Select, Button, message, Upload, useState, Modal, Table, useEffect } from '../../../libraries/dependencies';
+import { React, UploadOutlined, Form, Row, Col, Input, DatePicker, Select, Button, message, Upload, useState, Modal, Table, useEffect, moment, Link } from '../../../libraries/dependencies';
 
 const { Option } = Select;
 
@@ -20,6 +20,7 @@ function BrowseKeberatan() {
     const [disposisiVisible, setDisposisiVisible] = useState(false);
     const [pilihVisible, setPilihVisible] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [jenisDokumen, setJenisDokumen] = useState([]);
     const columns_browse = [
         {
             title: "No",
@@ -36,8 +37,8 @@ function BrowseKeberatan() {
         },
         {
             title: 'Tgl Surat',
-            dataIndex: 'tglSurat',
-            key: 'tglSurat',
+            dataIndex: 'tanggalSurat',
+            key: 'tanggalSurat',
             align: 'center'
         },
         {
@@ -68,7 +69,7 @@ function BrowseKeberatan() {
             title: 'Waktu Terima',
             dataIndex: 'waktuTerima',
             key: 'waktuTerima',
-            align: 'center'
+            align: 'center',
         },
         {
             title: 'Pemeriksa',
@@ -83,16 +84,6 @@ function BrowseKeberatan() {
             render: () =>
                 <>
                     <Button type="primary" onClick={() => showModal("report")}>Report</Button>
-                    <Modal
-                        title="Report Modal"
-                        visible={reportVisible}
-                        onOk={() => handleOk("report")}
-                        onCancel={() => handleCancel("report")}
-                    >
-                        <p>Some contents...</p>
-                        <p>Some contents...</p>
-                        <p>Some contents...</p>
-                    </Modal>
                 </>
         },
         {
@@ -101,142 +92,26 @@ function BrowseKeberatan() {
             align: 'center',
             fixed: 'right',
             width: 350,
-            render: () =>
+            render: (data) =>
                 <>
-                    <Button type="primary" onClick={() => showModal("cabutModal")}>Cabut Keberatan</Button>
+                    <Button type="primary" onClick={() => showModal({ name: "cabutModal", data: data })}>Cabut Keberatan</Button>
                     <span>&nbsp;</span>
-                    <Button type="primary" onClick={() => showModal("editModal")}>Edit</Button>
+                    <Button type="primary" onClick={() => showModal({ name: "editModal" })}><Link to={{ pathname: "/perbendaharaan/perekaman-keberatan", state: true }}>Edit</Link></Button>
                     <span>&nbsp;</span>
-                    <Button type="primary" onClick={() => showModal("disposisiModal")}>Disposisi</Button>
-                    <Modal
-                        title="Cabut Keberatan Form"
-                        visible={cabutVisible}
-                        onOk={() => handleOk("cabutModal")}
-                        onCancel={() => handleCancel("cabutModal")}
-                        footer={[
-                            <Button key="back" onClick={onReset}>
-                                Batal
-                            </Button>,
-                            <Button key="submit" type="primary" loading={loading} onClick={onFinish}>
-                                Submit
-                            </Button>,
-                        ]}
-                    >
-                        <Form form={form} name="first-form" labelAlign={"left"} size={"small"}>
-                            <Form.Item>
-                                <Row gutter={8}>
-                                    <Col span={12}>
-                                        <Form.Item
-                                            name="jenisPenetapan"
-                                            label="jenisPenetapan"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Select>
-                                                <Option value="PIB-BERKALA">PIB BERKALA</Option>
-                                                <Option value="PIB-VOORITSLAG">PIB VOORITSLAG</Option>
-                                                <Option value="RUSH-HANDLING">RUSH HANDLING</Option>
-                                                <Option value="SPTNP">SPTNP</Option>
-                                                <Option value="SPKTNP">SPKTNP</Option>
-                                                <Option value="SPP">SPP</Option>
-                                                <Option value="SPSA">SPSA</Option>
-                                                <Option value="SPPBMCP">SPPBMCP</Option>
-                                                <Option value="PEB-PENUNDAAN">PEB PENUNDAAN</Option>
-                                                <Option value="SPPBK">SPPBK</Option>
-                                                <Option value="SPKPBK">SPKPBK</Option>
-                                                <Option value="CK1-PENUNDAAN">CK1 PENUNDAAN</Option>
-                                                <Option value="CK1A-BERKALA">CK1A BERKALA</Option>
-                                                <Option value="CK5">CK5</Option>
-                                                <Option value="STCK1">STCK1</Option>
-                                                <Option value="SPPBP">SPPBP</Option>
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item
-                                            name="tglPenetapan"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <DatePicker style={{ width: '100%' }} placeholder="tanggal penetapan" />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-                            </Form.Item>
-                            <Form.Item name="npwp" rules={[{ required: false }]}>
-                                <Input placeholder="npwp" />
-                            </Form.Item>
-                            <Form.Item name="alamat" rules={[{ required: false }]}>
-                                <Input.TextArea style={{ minHeight: 150, maxHeight: 150 }} placeholder="alamat" />
-                            </Form.Item>
-                            <Form.Item>
-                                <Row gutter={8}>
-                                    <Col span={12}>
-                                        <Form.Item
-                                            name="kepPencabutan"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input placeholder="keputusan pencabutan" />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item
-                                            name="tglPencabutan"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <DatePicker style={{ width: '100%' }} placeholder="tanggal pencabutan" />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-                            </Form.Item>
-                            <Form.Item>
-                                <Row gutter={8}>
-                                    <Col span={19}>
-                                        <Form.Item
-                                            name="berkas"
-                                            noStyle
-                                            rules={[{ required: false }]}
-                                        >
-                                            <Input placeholder={originFileObj === null ? "Tidak ada file." : originFileObj.name} disabled={true} />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={5}>
-                                        <Upload {...propsUpload} showUploadList={false}>
-                                            <Button type="primary" htmlType="button">
-                                                <UploadOutlined />Upload
-                                            </Button>
-                                        </Upload>
-                                    </Col>
-                                </Row>
-                            </Form.Item>
-                        </Form>
-                    </Modal >
-                    <Modal
-                        title="Edit Modal"
-                        visible={editVisible}
-                        onOk={() => handleOk("editModal")}
-                        onCancel={() => handleCancel("editModal")}
-                    >
-                        <p>Some contents...</p>
-                        <p>Some contents...</p>
-                        <p>Some contents...</p>
-                    </Modal>
-                    <Modal
-                        title="Disposisi Modal"
-                        visible={disposisiVisible}
-                        onOk={() => handleOk("disposisiModal")}
-                        onCancel={() => handleCancel("disposisiModal")}
-                        style={{ minWidth: 1040 }}
-                    >
-                        <Table columns={columns_disposisi} dataSource={data_disposisi} scroll={{ x: 1500 }} bordered={true} />
-                    </Modal>
+                    <Button type="primary" onClick={() => showModal({ name: "disposisiModal" })} disabled>Disposisi</Button>
                 </>
         },
     ];
 
-    const [dataBrowse, setDataBrowse] = useState([]);
+    const [dataBrowse, setDataBrowse] = useState([{
+        no: '1',
+        key: '1',
+        noSurat: 'XXXX'
+    }, {
+        no: '2',
+        key: '2',
+        noSurat: 'XXXX'
+    }]);
 
     const columns_data = [
         {
@@ -268,7 +143,8 @@ function BrowseKeberatan() {
             title: 'Waktu',
             dataIndex: 'waktu',
             key: 'waktu',
-            align: 'center'
+            align: 'center',
+            render: text => <span aria-disabled={"true"}>{moment(text).format('DD-MM-YYYY')}</span>
         },
     ];
 
@@ -320,17 +196,7 @@ function BrowseKeberatan() {
             width: 100,
             render: () =>
                 <>
-                    <Button type="primary" onClick={() => showModal("pilihModal")}>Pilih</Button>
-                    <Modal
-                        title="Pilih Modal"
-                        visible={pilihVisible}
-                        onOk={() => handleOk("pilihModal")}
-                        onCancel={() => handleCancel("pilihModal")}
-                    >
-                        <p>Some contents...</p>
-                        <p>Some contents...</p>
-                        <p>Some contents...</p>
-                    </Modal>
+                    <Button type="primary" onClick={() => showModal({ name: "pilihModal" })}>Pilih</Button>
                 </>
         },
     ];
@@ -356,17 +222,36 @@ function BrowseKeberatan() {
         },
     ];
 
+    const onChangeNamaPejabat = async (val) => {
+        await fetch(`http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-pegawai?search=${val}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.data.length > 1) {
+                    message.info("Data Yang di Masukkan Kurang Spesifik.");
+                }
+                form.setFieldsValue({ namaPejabat: data.data.data[0].namaPegawai });
+            }).catch(err => message.error("[ERROR]: ", err))
+    }
 
-    function showModal(name) {
-        if (name === "report") {
+    function showModal(props) {
+        if (props.name === "report") {
             setReportVisible(!reportVisible);
-        } else if (name === "cabutModal") {
+        } else if (props.name === "cabutModal") {
+            const { npwp, idKeberatan, kantorPenerbit, alamat, jenisDokumen, tanggalDokumen } = props.data;
+            form.setFieldsValue({
+                npwp: npwp,
+                idKeberatan: idKeberatan,
+                KodeKantorPenerbit: kantorPenerbit,
+                alamat: alamat,
+                jenisPenetapan: jenisDokumen,
+                tglPenetapan: moment(tanggalDokumen, "YYYY-MM-DD")
+            })
             setCabutVisible(!cabutVisible);
-        } else if (name === "editModal") {
+        } else if (props.name === "editModal") {
             setEditVisible(!editVisible);
-        } else if (name === "disposisiModal") {
+        } else if (props.name === "disposisiModal") {
             setDisposisiVisible(!disposisiVisible);
-        } else if (name === "pilihModal") {
+        } else if (props.name === "pilihModal") {
             setPilihVisible(!pilihVisible);
         }
     };
@@ -412,26 +297,71 @@ function BrowseKeberatan() {
                     }
                     setDataBrowse(data.data)
                 });
+
+
+            /** Jenis Dokumen */
+            await fetch("http://10.162.71.119:9090/perbendaharaan/perben/referensi/list-jenis-dokumen?keterangan=keberatan")
+                .then(res => res.json())
+                .then(data => setJenisDokumen(data.data));
         }
         fetchData();
     }, []);
 
+    const onSimpanKeberatan = (bodyData) => {
+        fetch("http://10.162.71.119:9090/perbendaharaan/perben/keberatan/simpan-pencabutan-keberatan", {
+            method: "POST",
+            body: JSON.stringify(bodyData),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data, 'res data simpan')
+            })
+            .catch(err => {
+                console.log('[ERROR]:', err);
+            });
+    }
+
     const onFinish = () => {
+        // Regex For Extension
+        const nameFile = originFileObj.name
+        const fileName = nameFile.substr(0, nameFile.lastIndexOf('.'))
+        const extFileName = nameFile.substring(nameFile.lastIndexOf('.') + 1)
+        // -----------------
         setLoading(!loading);
         form
             .validateFields()
             .then(async values => {
-                console.log('All Values:', values)
+                const bodyData = {
+                    tdKeputusanKeberatan: {
+                        idKeberatan: values.idKeberatan,
+                        kodeKantor: values.KodeKantorPenerbit,
+                        nipPejabat: values.nipPejabat,
+                        nmPejabat: values.namaPejabat,
+                        noKep: values.noKeputusanPencabutan,
+                        resumeKep: values.resumeKeputusan,
+                        tglKepKeberatan: moment(values.tglKeputusanPencabutan).format('YYYY-MM-DD HH:mm:ss')
+                    },
+                    ttBerkas: {
+                        namaFile: fileName,
+                        typeFile: extFileName,
+                        urlFile: "string"
+                    }
+                }
+
                 setTimeout(() => {
+                    onSimpanKeberatan(bodyData);
                     form.resetFields();
                     setOriginFileObj(null) // file upld.
                     setCabutVisible(false);
                     setLoading(false);
                     message.success("Data Terkirim!");
-                }, 5000)
+                }, 100)
             })
             .catch(err => {
-                console.log('Validate Failed:', err);
+                console.log('[ERROR]:', err);
             });
     };
 
@@ -459,7 +389,7 @@ function BrowseKeberatan() {
             onClick: () => {
                 setRowId(record.idKeberatan);
                 onFetchStatus(record.idKeberatan);
-            },
+            }
         };
     }
 
@@ -481,6 +411,168 @@ function BrowseKeberatan() {
             <Row>
                 <Table columns={columns_data} dataSource={dataStatus} scroll={{ x: 1500 }} bordered={true} pagination={false} />
             </Row>
+            <Modal
+                title="Cabut Keberatan Form"
+                visible={cabutVisible}
+                onOk={() => handleOk("cabutModal")}
+                onCancel={() => handleCancel("cabutModal")}
+                footer={[
+                    <Button key="back" onClick={onReset}>
+                        Batal
+                            </Button>,
+                    <Button key="submit" type="primary" loading={loading} onClick={onFinish}>
+                        Submit
+                            </Button>
+                ]}
+            >
+                <Form form={form} labelAlign={"left"} size={"small"}>
+                    <Form.Item name="idKeberatan" rules={[{ required: false }]} hidden>
+                        <Input placeholder="idKeberatan" />
+                    </Form.Item>
+                    <Form.Item name="KodeKantorPenerbit" rules={[{ required: false }]} hidden>
+                        <Input placeholder="KodeKantorPenerbit" />
+                    </Form.Item>
+                    <Form.Item>
+                        <Row gutter={8}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="nipPejabat"
+                                    noStyle
+                                    rules={[{ required: false }]}
+                                >
+                                    <Input onChange={(e) => onChangeNamaPejabat(e.target.value)} placeholder="nip pejabat" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="namaPejabat"
+                                    noStyle
+                                    rules={[{ required: false }]}
+                                >
+                                    <Input placeholder="nama pejabat" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form.Item>
+                    <Form.Item>
+                        <Row gutter={8}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="jenisPenetapan"
+                                    label="jenisPenetapan"
+                                    noStyle
+                                    rules={[{ required: false }]}
+                                >
+                                    <Select>
+                                        {jenisDokumen.map((item) => (
+                                            <Option value={item.kodeDokumen} key={item.kodeDokumen}>{item.uraianDokumen}</Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="tglPenetapan"
+                                    noStyle
+                                    rules={[{ required: false }]}
+                                >
+                                    <DatePicker style={{ width: '100%' }} placeholder="tanggal penetapan" format={'DD-MM-YYYY'} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form.Item>
+                    <Form.Item name="npwp" rules={[{ required: false }]}>
+                        <Input placeholder="npwp" />
+                    </Form.Item>
+                    <Form.Item name="alamat" rules={[{ required: false }]}>
+                        <Input.TextArea style={{ minHeight: 150, maxHeight: 150 }} placeholder="alamat" />
+                    </Form.Item>
+                    <Form.Item>
+                        <Row gutter={8}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="noKeputusanPencabutan"
+                                    noStyle
+                                    rules={[{ required: false }]}
+                                >
+                                    <Input placeholder="nomor keputusan pencabutan" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="tglKeputusanPencabutan"
+                                    noStyle
+                                    rules={[{ required: false }]}
+                                >
+                                    <DatePicker style={{ width: '100%' }} placeholder="tanggal pencabutan" format={'DD-MM-YYYY'} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form.Item>
+                    <Form.Item name="resumeKeputusan" rules={[{ required: false }]}>
+                        <Input placeholder="resume keputusan" />
+                    </Form.Item>
+                    <Form.Item>
+                        <Row gutter={8}>
+                            <Col span={19}>
+                                <Form.Item
+                                    name="berkas"
+                                    noStyle
+                                    rules={[{ required: false }]}
+                                >
+                                    <Input placeholder={originFileObj === null ? "Tidak ada file." : originFileObj.name} disabled={true} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={5}>
+                                <Upload {...propsUpload} showUploadList={false}>
+                                    <Button type="primary" htmlType="button">
+                                        <UploadOutlined />Upload
+                                            </Button>
+                                </Upload>
+                            </Col>
+                        </Row>
+                    </Form.Item>
+                </Form>
+            </Modal>
+            <Modal
+                title="Edit Modal"
+                visible={editVisible}
+                onOk={() => handleOk("editModal")}
+                onCancel={() => handleCancel("editModal")}
+            >
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+            </Modal>
+            <Modal
+                title="Disposisi Modal"
+                visible={disposisiVisible}
+                onOk={() => handleOk("disposisiModal")}
+                onCancel={() => handleCancel("disposisiModal")}
+                style={{ minWidth: 1040 }}
+            >
+                <Table columns={columns_disposisi} dataSource={data_disposisi} scroll={{ x: 1500 }} bordered={true} />
+            </Modal>
+            <Modal
+                title="Report Modal"
+                visible={reportVisible}
+                onOk={() => handleOk("report")}
+                onCancel={() => handleCancel("report")}
+            >
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+            </Modal>
+            <Modal
+                title="Pilih Modal"
+                visible={pilihVisible}
+                onOk={() => handleOk("pilihModal")}
+                onCancel={() => handleCancel("pilihModal")}
+            >
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+            </Modal>
         </>
     )
 }
